@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: shemsu_postgres
+    environment:
+      POSTGRES_USER: shemsu_user
+      POSTGRES_PASSWORD: shemsu_password
+      POSTGRES_DB: shemsu_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shemsu_user -d shemsu_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
