@@ -1,0 +1,22 @@
+const { eq } = require('drizzle-orm');
+const { db } = require('../config/db');
+const { users } = require('../models/schema');
+
+// Get current user profile
+exports.getMe = async (req, res, next) => {
+  try {
+    const [user] = await db.select().from(users).where(eq(users.id, req.user.id)).limit(1);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.status(200).json({
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
