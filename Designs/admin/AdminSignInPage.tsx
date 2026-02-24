@@ -1,26 +1,21 @@
 import React, { useState } from 'react';
 import { Shield, Mail, Lock, Eye, EyeOff, AlertCircle, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useAuth } from '../../../hooks/useAuth';
-import { toast } from 'react-hot-toast';
+import { motion } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 
-const AdminLoginPage = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+const AdminSignInPage = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const { adminLogin } = useAuth();
+  const [email, setEmail] = useState('admin@shemsu.com');
+  const [password, setPassword] = useState('••••••••');
 
-  const handleSubmit = (e) => {
+  const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault();
-    adminLogin.mutate(formData, {
-      onSuccess: () => toast.success('Access Granted. Welcome, Administrator.'),
-      onError: (err) => {
-        toast.error(err.response?.data?.message || 'Authentication failed. Access denied.');
-      },
-    });
+    navigate('/admin/dashboard');
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-4 font-sans relative overflow-hidden text-slate-900">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-4 font-sans relative overflow-hidden">
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-1 bg-blue-600"></div>
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-50 rounded-full blur-3xl opacity-50"></div>
@@ -52,17 +47,17 @@ const AdminLoginPage = () => {
             <p className="text-slate-500 text-sm mt-1">Authorized personnel only.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSignIn} className="space-y-6">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Email Address</label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                 <input 
                   type="email" 
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
-                  
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  placeholder="admin@shemsu.com"
                 />
               </div>
             </div>
@@ -76,9 +71,9 @@ const AdminLoginPage = () => {
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                 <input 
                   type={showPassword ? "text" : "password"} 
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 pl-11 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 pl-11 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   placeholder="••••••••"
                 />
                 <button 
@@ -93,22 +88,17 @@ const AdminLoginPage = () => {
 
             <button 
               type="submit"
-              disabled={adminLogin.isPending}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2 group"
             >
-              {adminLogin.isPending ? 'Authenticating...' : (
-                <>
-                  <span>Sign In to Dashboard</span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
+              <span>Sign In to Dashboard</span>
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </form>
 
           {/* Security Notice */}
           <div className="mt-8 p-4 bg-amber-50 rounded-2xl border border-amber-100 flex gap-3">
             <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
-            <p className="text-[11px] text-amber-800 leading-relaxed font-medium">
+            <p className="text-[11px] text-amber-800 leading-relaxed">
               <span className="font-bold">Restriction Policy:</span> Access to this area is restricted to authorized Shemsu administrators only. All activity is logged and monitored for security compliance.
             </p>
           </div>
@@ -129,4 +119,4 @@ const AdminLoginPage = () => {
   );
 };
 
-export default AdminLoginPage;
+export default AdminSignInPage;

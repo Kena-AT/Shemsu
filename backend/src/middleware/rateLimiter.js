@@ -1,14 +1,49 @@
 const rateLimit = require('express-rate-limit');
+const { db } = require('../config/db');
+const { systemSettings } = require('../models/schema');
+const { eq } = require('drizzle-orm');
+const logger = require('../config/logger');
+
+// Security Guardrails for Dynamic Configuration
+const HARD_MIN = 10;   // Minimum 10 reqs/window
+const HARD_MAX = 5000; // Maximum 5000 reqs/window
+const DEFAULT_LIMIT = 100;
+
+/**
+ * Dynamically fetch API limit from system settings
+ */
+const getDynamicLimit = async () => {
+  try {
+    const [setting] = await db.select()
+      .from(systemSettings)
+      .where(eq(systemSettings.key, 'apiGlobalRequestLimit'))
+      .limit(1);
+
+    if (setting && setting.value) {
+      const val = parseInt(setting.value);
+      if (!isNaN(val)) {
+        // Enforce hard bounds to prevent administrative misconfiguration
+        return Math.min(Math.max(val, HARD_MIN), HARD_MAX);
+      }
+    }
+  } catch (error) {
+    logger.error(`RateLimiter dynamic fetch error: ${error.message}`);
+  }
+  return DEFAULT_LIMIT;
+};
 
 const rateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  limit: async (req, res) => {
+    return await getDynamicLimit();
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
   message: {
     status: 'error',
     message: 'Too many requests from this IP, please try again after 15 minutes',
   },
+  skip: (req) => req.path === '/health',
 });
 
 module.exports = rateLimiter;

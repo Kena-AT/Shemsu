@@ -6,6 +6,7 @@ import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { MapPin, Phone, User, ShoppingBag, CreditCard, ChevronLeft } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { checkoutSchema, validateWithZod } from '../../lib/validationSchemas';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -34,19 +35,16 @@ const CheckoutPage = () => {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.subcity) newErrors.subcity = 'Subcity is required';
-    if (!formData.phone) newErrors.phone = 'Phone number is required';
-    if (!formData.phone.match(/^(\+251|0)9[0-9]{8}$/)) newErrors.phone = 'Invalid Ethiopian phone number';
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const validate = () => {
+    const { success, errors: validationErrors } = validateWithZod(checkoutSchema, formData);
+    setErrors(validationErrors);
+    return success;
   };
 
   const handleCheckout = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validate()) return;
+
 
     try {
       const orderData = {

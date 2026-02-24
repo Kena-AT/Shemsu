@@ -4,6 +4,8 @@ const productController = require('../controllers/productController');
 const categoryController = require('../controllers/categoryController');
 const { authenticate, authorize } = require('../middleware/auth');
 const { uploadMultiple } = require('../middleware/uploadMiddleware');
+const validate = require('../middleware/validationMiddleware');
+const { productSchema } = require('../utils/validationSchemas');
 
 // Public routes
 router.get('/', productController.getProducts);
@@ -16,6 +18,7 @@ router.post('/',
   authenticate, 
   authorize('seller'), 
   uploadMultiple, 
+  validate(productSchema),
   productController.createProduct
 );
 
@@ -23,6 +26,7 @@ router.patch('/:id',
   authenticate, 
   authorize('seller'), 
   uploadMultiple, 
+  validate(productSchema),
   productController.updateProduct
 );
 

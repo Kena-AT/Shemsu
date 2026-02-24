@@ -255,7 +255,7 @@ const AddEditProduct = () => {
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-2">Base Price</label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">ETB</span>
                       <input 
                         type="number" 
                         name="price"
@@ -271,7 +271,7 @@ const AddEditProduct = () => {
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-2">Sale Price (Optional)</label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">ETB</span>
                       <input 
                         type="number" 
                         name="salePrice"

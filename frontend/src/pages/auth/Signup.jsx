@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { User, ShoppingBag, Mail, Lock, CheckCircle2, Eye, EyeOff, Store } from 'lucide-react';
+import { User, ShoppingBag, Mail, Lock, CheckCircle2, Eye, EyeOff, Store, AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../hooks/useAuth';
 import Button from '../../components/common/Button';
+import { registerSchema, validateWithZod } from '../../lib/validationSchemas';
 
 // ─── Custom Logo Icon ─────────────────────────────────────────────────────────
 const ShemsuLogo = () => (
@@ -32,7 +33,7 @@ const Feature = ({ title, desc }) => (
 );
 
 // ─── Input Field ──────────────────────────────────────────────────────────────
-const FormInput = ({ label, icon: Icon, rightIcon, type = 'text', ...props }) => (
+const FormInput = ({ label, icon: Icon, rightIcon, type = 'text', error, ...props }) => (
   <div className="space-y-1.5">
     <label className="block text-sm font-medium text-gray-800">{label}</label>
     <div className="relative">
@@ -41,7 +42,12 @@ const FormInput = ({ label, icon: Icon, rightIcon, type = 'text', ...props }) =>
       </div>
       <input
         type={type}
-        className="w-full border border-gray-200 rounded-lg py-2.5 pl-10 pr-10 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all bg-white"
+        className={cn(
+          'w-full border rounded-lg py-2.5 pl-10 pr-10 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all bg-white',
+          error
+            ? 'border-red-400 focus:border-red-400 focus:ring-red-100'
+            : 'border-gray-200 focus:border-blue-500 focus:ring-blue-100'
+        )}
         {...props}
       />
       {rightIcon && (
@@ -50,6 +56,11 @@ const FormInput = ({ label, icon: Icon, rightIcon, type = 'text', ...props }) =>
         </div>
       )}
     </div>
+    {error && (
+      <p className="flex items-center gap-1.5 text-xs text-red-600 font-medium">
+        <AlertCircle size={12} />{error}
+      </p>
+    )}
   </div>
 );
 
@@ -58,17 +69,33 @@ const Signup = () => {
   const [role, setRole] = useState('buyer');
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ fullName: '', email: '', password: '' });
+  const [errors, setErrors] = useState({});
   const { register } = useAuth();
 
-  const set = (field) => (e) => setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+  const set = (field) => (e) => {
+    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+    setErrors(prev => ({ ...prev, [field]: null }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const { success, errors: validationErrors } = validateWithZod(registerSchema, formData);
+    if (!success) {
+      setErrors(validationErrors);
+      return;
+    }
+    setErrors({});
     register.mutate({ ...formData, role }, {
       onSuccess: () => toast.success('Registration successful! Please check your email.'),
       onError: (err) => {
-        const msg = err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || 'Registration failed';
-        toast.error(msg);
+        const serverErrors = err.response?.data?.errors;
+        if (serverErrors) {
+          // Map Zod server errors back into form
+          const mapped = {};
+          serverErrors.forEach(({ field, message }) => { if (field) mapped[field] = message; });
+          if (Object.keys(mapped).length > 0) { setErrors(mapped); return; }
+        }
+        toast.error(err.response?.data?.message || 'Registration failed');
       },
     });
   };
@@ -155,8 +182,8 @@ const Signup = () => {
               label="Full Name"
               icon={User}
               placeholder="John Doe"
-              required
               value={formData.fullName}
+              error={errors.fullName}
               onChange={set('fullName')}
             />
 
@@ -165,8 +192,8 @@ const Signup = () => {
               icon={Mail}
               type="email"
               placeholder="name@company.com"
-              required
               value={formData.email}
+              error={errors.email}
               onChange={set('email')}
             />
 
@@ -179,10 +206,14 @@ const Signup = () => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
-                  required
                   value={formData.password}
                   onChange={set('password')}
-                  className="w-full border border-gray-200 rounded-lg py-2.5 pl-10 pr-10 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+                  className={cn(
+                    'w-full border rounded-lg py-2.5 pl-10 pr-10 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all',
+                    errors.password
+                      ? 'border-red-400 focus:border-red-400 focus:ring-red-100'
+                      : 'border-gray-200 focus:border-blue-500 focus:ring-blue-100'
+                  )}
                 />
                 <button
                   type="button"
@@ -192,7 +223,13 @@ const Signup = () => {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              <p className="text-xs text-gray-400 mt-1">Must be at least 8 characters with one number.</p>
+              {errors.password ? (
+                <p className="flex items-center gap-1.5 text-xs text-red-600 font-medium">
+                  <AlertCircle size={12} />{errors.password}
+                </p>
+              ) : (
+                <p className="text-xs text-gray-400 mt-1">Must be at least 8 characters with one number.</p>
+              )}
             </div>
 
             {/* Terms */}

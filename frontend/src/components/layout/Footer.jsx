@@ -80,7 +80,7 @@ const Footer = ({ showNewsletter = true, showCompany = true }) => {
           <p className="text-slate-400 text-xs">© 2024 Shemsu Marketplace. All rights reserved.</p>
           <div className="flex gap-6">
             <a href="#" className="text-slate-400 text-xs hover:text-slate-600">English (US)</a>
-            <a href="#" className="text-slate-400 text-xs hover:text-slate-600">USD ($)</a>
+            <span className="text-slate-400 text-xs">ETB</span>
           </div>
         </div>
       </div>

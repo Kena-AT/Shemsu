@@ -3,27 +3,42 @@ import {
   Users, 
   Search, 
   Filter, 
+  ChevronDown, 
   MoreVertical, 
-  Shield, 
-  UserX, 
-  UserCheck, 
-  Trash2, 
-  Mail,
-  Calendar,
-  AlertTriangle
+  ChevronLeft, 
+  ChevronRight, 
+  UserPlus, 
+  Download, 
+  Mail, 
+  ShieldCheck, 
+  Ban, 
+  Clock,
+  UserCheck,
+  AlertTriangle,
+  UserX
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAdmin } from '../../../hooks/useAdmin';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { exportToCSV } from '../../../lib/exportUtils';
 
 const UserManagement = () => {
   const [params, setParams] = useState({ search: '', role: '', status: '' });
-  const { useGetUsers, updateStatus } = useAdmin();
+  const { useGetUsers, updateStatus, useGetStats } = useAdmin();
   const { data: usersData, isLoading } = useGetUsers(params);
+  const { data: stats } = useGetStats();
   
   const [editingUser, setEditingUser] = useState(null);
   const [statusReason, setStatusReason] = useState('');
   const [newStatus, setNewStatus] = useState('');
+  const [activeDropdown, setActiveDropdown] = useState(null);
+
+  const handleExport = () => {
+    if (!usersData || !usersData.length) return toast.error('No data available for export');
+    exportToCSV(usersData, `shemsu_users_${new Date().toISOString().split('T')[0]}.csv`);
+    toast.success('Registry export initiated');
+  };
 
   const handleStatusChange = (e) => {
     e.preventDefault();
@@ -42,132 +57,242 @@ const UserManagement = () => {
     );
   };
 
-  const getStatusColor = (status) => {
+  const getStatusInfo = (status) => {
     switch (status) {
-      case 'active': return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
-      case 'suspended': return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
-      case 'banned': return 'bg-red-500/10 text-red-500 border-red-500/20';
-      default: return 'bg-slate-500/10 text-slate-500 border-slate-500/20';
+      case 'active': return { color: 'bg-emerald-50 text-emerald-600', dot: 'bg-emerald-500' };
+      case 'suspended': return { color: 'bg-amber-50 text-amber-600', dot: 'bg-amber-500' };
+      case 'banned': return { color: 'bg-rose-50 text-rose-600', dot: 'bg-rose-500' };
+      default: return { color: 'bg-slate-50 text-slate-500', dot: 'bg-slate-400' };
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center">
+        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-white italic tracking-tight uppercase">User Registry</h1>
-          <p className="text-slate-500 font-medium mt-1">Manage global access and behavioral overrides.</p>
+          <h1 className="text-2xl font-bold text-slate-900">User Management</h1>
+          <p className="text-slate-500 text-sm mt-1">Control access, monitor activities, and manage platform roles.</p>
         </div>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={handleExport}
+            className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all uppercase tracking-widest"
+          >
+            <Download className="w-4 h-4" />
+            <span>Export Registry</span>
+          </button>
+          <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm shadow-blue-200 uppercase tracking-widest">
+            <UserPlus className="w-4 h-4" />
+            <span>Add New Admin</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Bar */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {[
+          { label: 'Total Users', value: stats?.totalUsers?.toLocaleString() || '0', change: '+12% vs last month', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { label: 'Active Now', value: stats?.activeUsers?.toLocaleString() || '0', change: 'Live Telemetry', icon: Clock, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+          { label: 'Pending Verification', value: stats?.pendingVerifications || '0', change: 'Action Required', icon: ShieldCheck, color: 'text-amber-600', bg: 'bg-amber-50' },
+          { label: 'Suspended Accounts', value: stats?.suspendedUsers || '0', change: 'Platform Overrides', icon: Ban, color: 'text-rose-600', bg: 'bg-rose-50' },
+        ].map((stat, i) => (
+          <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
+              <stat.icon className={`w-4 h-4 ${stat.color}`} />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900">{stat.value}</h3>
+            <p className={`text-[10px] font-bold mt-1 uppercase tracking-wider ${stat.color}`}>{stat.change}</p>
+          </div>
+        ))}
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-900/40 p-4 rounded-3xl border border-slate-800">
-        <div className="relative col-span-2">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-5 h-5" />
-          <input 
-            type="text" 
-            placeholder="Search by name or email..." 
-            className="w-full bg-slate-950 border border-slate-800 rounded-2xl py-3 pl-12 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-            value={params.search}
-            onChange={(e) => setParams({ ...params, search: e.target.value })}
-          />
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <input 
+              type="text" 
+              placeholder="Search by identity..." 
+              className="bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-4 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-64 transition-all"
+              value={params.search}
+              onChange={(e) => setParams({ ...params, search: e.target.value })}
+            />
+          </div>
+          <select 
+            className="bg-white border border-slate-200 rounded-xl py-2 px-4 text-xs font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            value={params.role}
+            onChange={(e) => setParams({ ...params, role: e.target.value })}
+          >
+            <option value="">All Roles</option>
+            <option value="buyer">Buyers</option>
+            <option value="seller">Sellers</option>
+            <option value="admin">Administrators</option>
+          </select>
+          <select 
+            className="bg-white border border-slate-200 rounded-xl py-2 px-4 text-xs font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            value={params.status}
+            onChange={(e) => setParams({ ...params, status: e.target.value })}
+          >
+            <option value="">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="suspended">Suspended</option>
+            <option value="banned">Banned</option>
+          </select>
         </div>
-        <select 
-          className="bg-slate-950 border border-slate-800 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 appearance-none"
-          value={params.role}
-          onChange={(e) => setParams({ ...params, role: e.target.value })}
-        >
-          <option value="">All Roles</option>
-          <option value="buyer">Buyers</option>
-          <option value="seller">Sellers</option>
-          <option value="admin">Admins</option>
-        </select>
-        <select 
-          className="bg-slate-950 border border-slate-800 rounded-2xl py-3 px-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 appearance-none"
-          value={params.status}
-          onChange={(e) => setParams({ ...params, status: e.target.value })}
-        >
-          <option value="">All Statuses</option>
-          <option value="active">Active</option>
-          <option value="suspended">Suspended</option>
-          <option value="banned">Banned</option>
-        </select>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Showing {usersData?.length || 0} results</p>
       </div>
 
       {/* Table */}
-      <div className="bg-slate-900/40 border border-slate-800 rounded-[2.5rem] overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-800">
-                <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Identity</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Role</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Status</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Joined</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-right">Control</th>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                <th className="px-6 py-4 w-12">
+                  <input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                </th>
+                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">User Details</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Role</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Joined</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/50">
-              {usersData?.map((user) => (
-                <tr key={user.id} className="group hover:bg-slate-800/20 transition-colors">
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-indigo-400 font-bold border border-slate-700">
-                        {user.fullName.charAt(0).toUpperCase()}
+            <tbody className="divide-y divide-slate-100">
+              {usersData?.map((user) => {
+                const statusInfo = getStatusInfo(user.status);
+                return (
+                  <tr key={user.id} className="hover:bg-slate-50/50 transition-colors group">
+                    <td className="px-6 py-4">
+                      <input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
+                          {user.fullName.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex flex-col text-left">
+                          <Link to={`/admin/users/${user.id}`} className="text-sm font-bold text-slate-900 hover:text-blue-600 transition-colors">
+                            {user.fullName}
+                            {user.isDeleted && <span className="ml-2 text-[9px] bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded-md border border-rose-100 uppercase tracking-tighter">Deleted</span>}
+                          </Link>
+                          <span className="text-[11px] text-slate-400 font-medium">{user.email}</span>
+                        </div>
                       </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold text-white group-hover:text-indigo-400 transition-colors">
-                          {user.fullName} {user.isDeleted && <span className="ml-2 text-[10px] bg-red-500/20 text-red-500 px-1.5 py-0.5 rounded border border-red-500/20 uppercase tracking-tighter">Deleted</span>}
-                        </span>
-                        <span className="text-xs text-slate-500">{user.email}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                        user.role === 'admin' ? 'text-indigo-600 bg-indigo-50' : 
+                        user.role === 'seller' ? 'text-blue-600 bg-blue-50' : 
+                        'text-slate-600 bg-slate-100'
+                      }`}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-1.5 h-1.5 rounded-full ${statusInfo.dot}`}></div>
+                        <span className={`text-[10px] font-bold uppercase tracking-wider ${statusInfo.color.split(' ')[1]}`}>{user.status}</span>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-2">
-                      <Shield className={`w-3 h-3 ${user.role === 'admin' ? 'text-indigo-500' : user.role === 'seller' ? 'text-blue-500' : 'text-slate-500'}`} />
-                      <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">{user.role}</span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className={`text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-tighter border ${getStatusColor(user.status)}`}>
-                      {user.status}
-                    </span>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-2 text-slate-500">
-                      <Calendar className="w-3 h-3" />
-                      <span className="text-xs">{new Date(user.createdAt).toLocaleDateString()}</span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                       <button 
-                         onClick={() => { setEditingUser(user); setNewStatus('active'); }}
-                         className="p-2 text-slate-500 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-xl transition-all"
-                         title="Activate"
-                       >
-                         <UserCheck size={18} />
-                       </button>
-                       <button 
-                         onClick={() => { setEditingUser(user); setNewStatus('suspended'); }}
-                         className="p-2 text-slate-500 hover:text-amber-500 hover:bg-amber-500/10 rounded-xl transition-all"
-                         title="Suspend"
-                       >
-                         <AlertTriangle size={18} />
-                       </button>
-                       <button 
-                         onClick={() => { setEditingUser(user); setNewStatus('banned'); }}
-                         className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
-                         title="Ban"
-                       >
-                         <UserX size={18} />
-                       </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-6 py-4 text-xs font-medium text-slate-500">
+                      {new Date(user.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                         <button 
+                           onClick={() => { setEditingUser(user); setNewStatus('active'); }}
+                           className="p-2 text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all"
+                           title="Activate"
+                         >
+                           <UserCheck size={16} />
+                         </button>
+                         <button 
+                           onClick={() => { setEditingUser(user); setNewStatus('suspended'); }}
+                           className="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition-all"
+                           title="Suspend"
+                         >
+                           <AlertTriangle size={16} />
+                         </button>
+                         <button 
+                           onClick={() => { setEditingUser(user); setNewStatus('banned'); }}
+                           className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                           title="Ban"
+                         >
+                           <UserX size={16} />
+                         </button>
+                          <div className="w-[1px] h-4 bg-slate-200 mx-1"></div>
+                          
+                          <div className="relative">
+                            <button 
+                              onClick={() => setActiveDropdown(activeDropdown === user.id ? null : user.id)}
+                              className={`p-2 rounded-lg transition-all ${activeDropdown === user.id ? 'bg-blue-50 text-blue-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+
+                            <AnimatePresence>
+                              {activeDropdown === user.id && (
+                                <>
+                                  <div className="fixed inset-0 z-20" onClick={() => setActiveDropdown(null)} />
+                                  <motion.div 
+                                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                    className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl z-30 overflow-hidden py-2"
+                                  >
+                                    <button 
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(user.id);
+                                        toast.success('Identity internal ID copied');
+                                        setActiveDropdown(null);
+                                      }}
+                                      className="w-full text-left px-4 py-2 text-[10px] font-bold text-slate-600 hover:bg-slate-50 uppercase tracking-wider flex items-center gap-3"
+                                    >
+                                      <ShieldCheck className="w-3.5 h-3.5" />
+                                      <span>Copy Identity</span>
+                                    </button>
+                                    <button 
+                                      onClick={() => {
+                                         toast.success(`Communication channel opened with ${user.fullName}`);
+                                         setActiveDropdown(null);
+                                      }}
+                                      className="w-full text-left px-4 py-2 text-[10px] font-bold text-slate-600 hover:bg-slate-50 uppercase tracking-wider flex items-center gap-3"
+                                    >
+                                      <Mail className="w-3.5 h-3.5" />
+                                      <span>Direct Message</span>
+                                    </button>
+                                    <div className="h-[1px] bg-slate-100 my-1"></div>
+                                    <button 
+                                      onClick={() => {
+                                         toast.error('System reset requires Level 5 authorization');
+                                         setActiveDropdown(null);
+                                      }}
+                                      className="w-full text-left px-4 py-2 text-[10px] font-bold text-rose-600 hover:bg-rose-50 uppercase tracking-wider flex items-center gap-3"
+                                    >
+                                      <RotateCcw className="w-3.5 h-3.5" />
+                                      <span>System Reset</span>
+                                    </button>
+                                  </motion.div>
+                                </>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -182,33 +307,33 @@ const UserManagement = () => {
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }}
               onClick={() => setEditingUser(null)}
-              className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-[2.5rem] p-10 shadow-2xl"
+              className="relative w-full max-w-md bg-white border border-slate-200 rounded-3xl p-10 shadow-2xl"
             >
               <div className="text-center mb-8">
-                <div className={`w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center ${getStatusColor(newStatus)}`}>
+                <div className={`w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center ${getStatusInfo(newStatus).color}`}>
                   {newStatus === 'active' ? <UserCheck size={32} /> : <AlertTriangle size={32} />}
                 </div>
-                <h3 className="text-2xl font-black text-white italic tracking-tighter uppercase">Confirm Status Change</h3>
+                <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Confirm Status Override</h3>
                 <p className="text-slate-500 text-sm mt-2">
-                  Updating <strong>{editingUser.fullName}</strong> to <strong>{newStatus}</strong>.
+                  Setting <strong>{editingUser.fullName}</strong> to <strong>{newStatus.toUpperCase()}</strong>.
                 </p>
               </div>
 
               <form onSubmit={handleStatusChange} className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Mandatory Reason</label>
+                <div className="space-y-2 text-left">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] ml-1">Administrative Justification</label>
                   <textarea 
                     autoFocus
                     required
                     rows={3}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                    placeholder="Provide justification for this administrative override..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
+                    placeholder="Provide mandatory reason for this manual override..."
                     value={statusReason}
                     onChange={(e) => setStatusReason(e.target.value)}
                   />
@@ -218,17 +343,17 @@ const UserManagement = () => {
                   <button 
                     type="button"
                     onClick={() => setEditingUser(null)}
-                    className="flex-1 py-4 text-xs font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors"
+                    className="flex-1 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest hover:text-slate-900 transition-colors"
                   >
-                    Cancel
+                    Discard
                   </button>
                   <button 
                     type="submit"
-                    className={`flex-1 py-4 rounded-xl text-xs font-black uppercase tracking-widest text-white shadow-lg transition-all ${
-                      newStatus === 'active' ? 'bg-emerald-600 shadow-emerald-600/20' : newStatus === 'banned' ? 'bg-red-600 shadow-red-600/20' : 'bg-amber-600 shadow-amber-600/20'
+                    className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest text-white shadow-lg transition-all ${
+                      newStatus === 'active' ? 'bg-emerald-600 shadow-emerald-200' : newStatus === 'banned' ? 'bg-rose-600 shadow-rose-200' : 'bg-amber-600 shadow-amber-200'
                     }`}
                   >
-                    Execute Change
+                    Commit Changes
                   </button>
                 </div>
               </form>

@@ -9,6 +9,7 @@ const {
 } = require('../models/schema');
 const { eq, and, inArray, sql } = require('drizzle-orm');
 const chapaService = require('../services/chapaService');
+const notificationService = require('../services/notificationService');
 const logger = require('../config/logger');
 const crypto = require('crypto');
 
@@ -179,6 +180,16 @@ class OrderController {
           .where(inArray(cartItems.productId, productIds));
         
         logger.info(`Order ${order.id} processed successfully via finalization`);
+
+        // Send confirmation email asynchronously (handled by queue)
+        const buyer = await tx.query.users.findFirst({ where: eq(users.id, order.buyerId) });
+        if (buyer) {
+          notificationService.sendOrderConfirmation(buyer.email, {
+            id: order.id,
+            amount: order.totalAmount
+          });
+        }
+
         return { status: 'success' };
 
       } else {

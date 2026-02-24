@@ -5,13 +5,21 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../../hooks/useAuth';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
+import { loginSchema, validateWithZod } from '../../lib/validationSchemas';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [errors, setErrors] = useState({});
   const { login } = useAuth();
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const { success, errors: validationErrors } = validateWithZod(loginSchema, formData);
+    if (!success) {
+      setErrors(validationErrors);
+      return;
+    }
+    setErrors({});
     login.mutate(formData, {
       onSuccess: () => toast.success('Welcome back!'),
       onError: (err) => toast.error(err.response?.data?.message || 'Login failed'),
@@ -35,9 +43,9 @@ const Login = () => {
             placeholder="name@example.com"
             icon={Mail}
             type="email"
-            required
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            error={errors.email}
+            onChange={(e) => { setFormData({ ...formData, email: e.target.value }); setErrors(p => ({...p, email: null})); }}
           />
 
           <div className="space-y-1">
@@ -51,9 +59,9 @@ const Login = () => {
               placeholder="••••••••"
               icon={Lock}
               type="password"
-              required
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              error={errors.password}
+              onChange={(e) => { setFormData({ ...formData, password: e.target.value }); setErrors(p => ({...p, password: null})); }}
             />
           </div>
 

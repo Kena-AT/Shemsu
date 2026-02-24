@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const orderController = require('../controllers/orderController');
 const { authenticate, authorize } = require('../middleware/auth');
+const validate = require('../middleware/validationMiddleware');
+const { checkoutSchema, updateOrderItemStatusSchema } = require('../utils/validationSchemas');
 
 /**
  * @route POST /api/orders/webhook
@@ -20,7 +22,7 @@ router.use(authenticate);
  * @desc Create a new order and get Chapa checkout URL
  * @access Private (Buyer)
  */
-router.post('/checkout', orderController.createOrder);
+router.post('/checkout', validate(checkoutSchema), orderController.createOrder);
 
 /**
  * @route GET /api/orders/verify/:txRef
@@ -48,6 +50,10 @@ router.get('/seller', authorize('seller', 'admin'), orderController.getSellerOrd
  * @desc Update the status of a specific order item
  * @access Private (Seller)
  */
-router.patch('/item/:itemId/status', authorize('seller', 'admin'), orderController.updateOrderItemStatus);
+router.patch('/item/:itemId/status', 
+  authorize('seller', 'admin'), 
+  validate(updateOrderItemStatusSchema),
+  orderController.updateOrderItemStatus
+);
 
 module.exports = router;

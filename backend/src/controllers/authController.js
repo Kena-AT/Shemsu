@@ -4,8 +4,21 @@ const { eq, and } = require('drizzle-orm');
 const { db } = require('../config/db');
 const { users } = require('../models/schema');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailService');
+const notificationService = require('../services/notificationService');
 const logger = require('../config/logger');
 const crypto = require('crypto');
+
+// ... during class or exports
+exports.submitContactForm = async (req, res, next) => {
+  try {
+    const { name, email, subject, message } = req.body;
+    await notificationService.sendContactFormInquiry({ name, email, subject, message });
+    res.status(200).json({ message: 'Inquiry submitted successfully. Our team will contact you soon.' });
+  } catch (error) {
+    logger.error(`Contact form error: ${error.message}`);
+    next(error);
+  }
+};
 
 // Utility: Generate Access and Refresh Tokens
 const generateTokens = (user) => {
@@ -130,6 +143,11 @@ exports.login = async (req, res, next) => {
 
     if (!user.isVerified) {
       return res.status(403).json({ message: 'Please verify your email before logging in' });
+    }
+
+    // Restrict Admin login from user side
+    if (user.role === 'admin') {
+      return res.status(403).json({ message: 'Administrative accounts must login via the Admin Portal.' });
     }
 
     const isPasswordValid = await argon2.verify(user.password, password);

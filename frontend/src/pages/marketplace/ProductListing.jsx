@@ -83,7 +83,7 @@ const ProductListing = () => {
             </div>
 
             <div className="mb-8">
-              <h3 className="font-bold mb-4">Price Range: <span className="text-blue-600">${priceRange}</span></h3>
+              <h3 className="font-bold mb-4">Price Range: <span className="text-blue-600">ETB {priceRange}</span></h3>
               <div className="px-2">
                 <input 
                   type="range" 
@@ -95,8 +95,8 @@ const ProductListing = () => {
                   className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                 />
                 <div className="flex justify-between mt-2 text-xs text-slate-500 font-medium">
-                  <span>$0</span>
-                  <span>$5000+</span>
+                  <span>ETB 0</span>
+                  <span>ETB 5000+</span>
                 </div>
               </div>
             </div>
@@ -233,7 +233,7 @@ const ProductListing = () => {
                           </p>
                         )}
                         <div className={`flex items-center justify-between mt-auto ${viewMode === 'list' ? 'pt-4 border-t border-slate-50' : 'pt-4'}`}>
-                          <span className="font-bold text-lg">${price.toFixed(2)}</span>
+                          <span className="font-bold text-lg">ETB {price.toFixed(2)}</span>
                           <button className="p-2 bg-slate-50 hover:bg-blue-600 hover:text-white rounded-lg transition-all">
                             <ShoppingCart className="w-4 h-4" />
                           </button>

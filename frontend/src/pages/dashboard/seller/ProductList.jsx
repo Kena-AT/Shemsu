@@ -14,12 +14,15 @@ import {
   Settings,
   Pencil,
   Trash2,
-  Package
+  Package,
+  Download
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import SellerSidebar from '../../../components/layout/SellerSidebar';
 import { useProducts } from '../../../hooks/useProducts';
+import { exportToCSV } from '../../../lib/exportUtils';
+import { toast } from 'react-hot-toast';
 
 const ProductList = () => {
   const navigate = useNavigate();
@@ -60,6 +63,12 @@ const ProductList = () => {
     }
   };
 
+  const handleExport = () => {
+    if (!products || !products.length) return toast.error('No inventory data to export');
+    exportToCSV(products, `shemsu_inventory_${new Date().toISOString().split('T')[0]}.csv`);
+    toast.success('Inventory export initiated');
+  };
+
   const activeCount = products.filter(p => p.stock > 0).length;
   const lowStockCount = products.filter(p => p.stock > 0 && p.stock < 10).length;
   const draftCount = products.filter(p => p.stock === 0).length;
@@ -96,13 +105,22 @@ const ProductList = () => {
             <h1 className="text-2xl font-bold text-slate-900">My Products</h1>
             <p className="text-slate-500 text-sm mt-1">Manage your inventory, pricing, and product status.</p>
           </div>
-          <Link 
-            to="/seller/products/new" 
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm shadow-blue-200"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add New Product</span>
-          </Link>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={handleExport}
+              className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 px-6 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm"
+            >
+              <Download className="w-4 h-4" />
+              <span>Export Inventory</span>
+            </button>
+            <Link 
+              to="/seller/products/new" 
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm shadow-blue-200"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add New Product</span>
+            </Link>
+          </div>
         </div>
 
         {/* Filters Bar */}
@@ -200,7 +218,7 @@ const ProductList = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600">{product.category?.name || '—'}</td>
-                      <td className="px-6 py-4 text-sm font-bold text-slate-900">${parseFloat(product.price).toFixed(2)}</td>
+                      <td className="px-6 py-4 text-sm font-bold text-slate-900">ETB {parseFloat(product.price).toFixed(2)}</td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                           <span className={`text-sm font-bold ${product.stock < 10 ? 'text-amber-600' : 'text-slate-900'}`}>{product.stock}</span>

@@ -1,7 +1,9 @@
 import React from 'react';
 import { useOrder } from '../../../hooks/useOrder';
-import { Package, Truck, CheckCircle, XCircle, AlertCircle, ExternalLink, User, Smartphone, MapPin } from 'lucide-react';
+import { Package, Truck, CheckCircle, XCircle, AlertCircle, ExternalLink, User, Smartphone, MapPin, Download } from 'lucide-react';
 import Button from '../../../components/common/Button';
+import { exportToCSV } from '../../../lib/exportUtils';
+import { toast } from 'react-hot-toast';
 
 const ManageOrders = () => {
   const { useGetSellerOrders, useUpdateItemStatus } = useOrder();
@@ -10,6 +12,12 @@ const ManageOrders = () => {
 
   const handleStatusUpdate = async (itemId, newStatus) => {
     await updateStatusMutation.mutateAsync({ itemId, status: newStatus });
+  };
+
+  const handleExport = () => {
+    if (!orders || !orders.length) return toast.error('No order history to export');
+    exportToCSV(orders, `shemsu_seller_orders_${new Date().toISOString().split('T')[0]}.csv`);
+    toast.success('Order history export initiated');
   };
 
   if (isLoading) {
@@ -27,7 +35,14 @@ const ManageOrders = () => {
           <h1 className="text-3xl font-bold text-slate-900">Manage Orders</h1>
           <p className="text-slate-500 mt-1">Track and fulfill your customer orders</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
+          <button 
+            onClick={handleExport}
+            className="bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm font-bold text-slate-600 flex items-center shadow-sm hover:bg-slate-50 transition-all"
+          >
+            <Download size={18} className="mr-2 text-slate-400" />
+            Export History
+          </button>
           <div className="bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm font-medium text-slate-600 flex items-center shadow-sm">
             <Package size={18} className="mr-2 text-blue-500" />
             {orders?.length || 0} Total Orders

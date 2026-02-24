@@ -122,8 +122,8 @@ const SearchResults = () => {
                     className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" 
                   />
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold">$0</div>
-                    <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold">${priceRange}</div>
+                    <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold">ETB 0</div>
+                    <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold">ETB {priceRange}</div>
                   </div>
                 </div>
               </div>
@@ -206,7 +206,7 @@ const SearchResults = () => {
 
                       <div className="mt-auto flex items-center justify-between">
                         <div className="flex flex-col">
-                          <span className="text-2xl font-black text-slate-900">${parseFloat(p.price).toFixed(2)}</span>
+                          <span className="text-2xl font-black text-slate-900">ETB {parseFloat(p.price).toFixed(2)}</span>
                           <span className="text-xs text-emerald-600 font-bold">Free Shipping</span>
                         </div>
                         <button className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95">

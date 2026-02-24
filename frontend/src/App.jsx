@@ -37,12 +37,16 @@ import ManageOrders from './pages/dashboard/seller/ManageOrders';
 import AdminLoginPage from './pages/dashboard/admin/AdminLoginPage';
 import AdminHome from './pages/dashboard/admin/AdminHome';
 import UserManagement from './pages/dashboard/admin/UserManagement';
-import { 
-  SellerVerification, 
-  ProductModeration, 
-  AuditLogs, 
-  SystemSettings 
-} from './pages/dashboard/admin/AdminPlaceholders';
+import AdminUserDetails from './pages/dashboard/admin/AdminUserDetails';
+import SellerVerificationQueue from './pages/dashboard/admin/SellerVerificationQueue';
+import ProductModeration from './pages/dashboard/admin/ProductModeration';
+import AdminProductDetails from './pages/dashboard/admin/AdminProductDetails';
+import GlobalOrders from './pages/dashboard/admin/GlobalOrders';
+import AdminOrderDetails from './pages/dashboard/admin/AdminOrderDetails';
+import SystemSettings from './pages/dashboard/admin/SystemSettings';
+import AdminProfile from './pages/dashboard/admin/AdminProfile';
+import AuditLogs from './pages/dashboard/admin/AuditLogs';
+import SecurityMiddleware from './pages/dashboard/admin/SecurityMiddleware';
 
 // Layout Components
 import Navbar from './components/layout/Navbar';
@@ -148,10 +152,16 @@ function App() {
             <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>
               <Route index element={<AdminHome />} />
               <Route path="users" element={<UserManagement />} />
-              <Route path="verifications" element={<SellerVerification />} />
+              <Route path="users/:id" element={<AdminUserDetails />} />
+              <Route path="verifications" element={<SellerVerificationQueue />} />
               <Route path="moderation" element={<ProductModeration />} />
+              <Route path="moderation/:id" element={<AdminProductDetails />} />
+              <Route path="orders" element={<GlobalOrders />} />
+              <Route path="orders/:id" element={<AdminOrderDetails />} />
               <Route path="audit" element={<AuditLogs />} />
+              <Route path="security" element={<SecurityMiddleware />} />
               <Route path="settings" element={<SystemSettings />} />
+              <Route path="profile" element={<AdminProfile />} />
             </Route>
 
             {/* Protected Seller Routes */}

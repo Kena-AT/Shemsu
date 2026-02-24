@@ -201,7 +201,7 @@ const MarketplaceHome = () => {
                     <span className="text-xs text-slate-400">(124 reviews)</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-lg text-slate-900">${parseFloat(product.price).toFixed(2)}</span>
+                    <span className="font-bold text-lg text-slate-900">ETB {parseFloat(product.price).toFixed(2)}</span>
                     <button className="p-2 bg-slate-50 hover:bg-blue-600 hover:text-white rounded-lg transition-all">
                       <ShoppingCart className="w-4 h-4" />
                     </button>

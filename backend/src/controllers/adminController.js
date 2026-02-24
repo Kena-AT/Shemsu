@@ -144,12 +144,40 @@ class AdminController {
         WHERE moderation_status = 'pending' AND is_deleted = false
       `);
 
+      // 6. Recent Verifications (Awaiting)
+      const recentVerifications = await db.select({
+        id: sellerVerifications.id,
+        name: users.fullName,
+        type: sql`'Merchant Account'`
+      })
+      .from(sellerVerifications)
+      .innerJoin(users, eq(sellerVerifications.sellerId, users.id))
+      .where(eq(sellerVerifications.status, 'pending'))
+      .orderBy(desc(sellerVerifications.createdAt))
+      .limit(3);
+
+      // 7. Recent System Activity (Audit Logs)
+      const recentActivity = await db.select({
+        event: auditLogs.action,
+        entity: auditLogs.targetType,
+        time: auditLogs.createdAt,
+        status: sql`'Success'`
+      })
+      .from(auditLogs)
+      .orderBy(desc(auditLogs.createdAt))
+      .limit(5);
+
       res.json({
         totalRevenue: parseFloat(revenueResult.rows[0].total_revenue),
         totalUsers: parseInt(usersResult.rows[0].total_users),
         totalProducts: parseInt(productsResult.rows[0].total_products),
         pendingVerifications: parseInt(verificationsResult.rows[0].pending_verifications),
-        pendingModeration: parseInt(moderationResult.rows[0].pending_moderation)
+        pendingModeration: parseInt(moderationResult.rows[0].pending_moderation),
+        recentVerifications,
+        recentActivity: recentActivity.map(a => ({
+          ...a,
+          time: new Date(a.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }))
       });
     } catch (error) {
       logger.error(`getDashboardStats error: ${error.message}`);
@@ -563,41 +591,59 @@ class AdminController {
    */
   async updateSystemSettings(req, res) {
     try {
-      const { key, value, reason } = req.body;
+      const updates = req.body; // Expecting { settings: { key: value }, reason }
+      const { settings, reason } = updates;
+
+      if (!settings || typeof settings !== 'object') {
+        return res.status(400).json({ message: 'Invalid settings format' });
+      }
+
+      const whitelist = ['maintenanceMode', 'commissionRate', 'supportEmail', 'maxUploadSizeKB', 'platformName', 'timezone', 'minPayout', 'notifications', 'maxLoginAttempts', 'maintenanceMessage'];
       
-      const whitelist = ['maintenanceMode', 'commissionRate', 'supportEmail', 'maxUploadSizeKB'];
-      if (!whitelist.includes(key)) {
-        return res.status(400).json({ message: 'Invalid system setting key' });
-      }
+      const results = [];
+      for (const [key, value] of Object.entries(settings)) {
+        if (!whitelist.includes(key)) continue;
 
-      // Validation logic
-      if (key === 'commissionRate' && (value < 0 || value > 100)) {
-        return res.status(400).json({ message: 'Commission rate must be between 0 and 100' });
-      }
+        // Specific validation for commissionRate
+        if (key === 'commissionRate' && (value < 0 || value > 100)) {
+           continue; 
+        }
 
-      const [oldSetting] = await db.select().from(systemSettings).where(eq(systemSettings.key, key)).limit(1);
+        const [oldSetting] = await db.select().from(systemSettings).where(eq(systemSettings.key, key)).limit(1);
 
-      await db.insert(systemSettings)
-        .values({ key, value, type: typeof value, updatedAt: new Date() })
-        .onConflictDoUpdate({
-          target: systemSettings.key,
-          set: { value, updatedAt: new Date() }
+        await db.insert(systemSettings)
+          .values({ 
+            key, 
+            value: typeof value === 'object' ? JSON.stringify(value) : String(value), 
+            type: typeof value, 
+            updatedAt: new Date() 
+          })
+          .onConflictDoUpdate({
+            target: systemSettings.key,
+            set: { 
+              value: typeof value === 'object' ? JSON.stringify(value) : String(value), 
+              updatedAt: new Date() 
+            }
+          });
+
+        await auditLogger.logAction({
+          adminId: req.user.id,
+          action: 'UPDATE_SYSTEM_SETTING',
+          targetType: 'system_setting',
+          targetId: key,
+          oldValue: oldSetting ? oldSetting.value : null,
+          newValue: value,
+          reason,
+          req
         });
+        
+        results.push(key);
+      }
 
-      await auditLogger.logAction({
-        adminId: req.user.id,
-        action: 'UPDATE_SYSTEM_SETTING',
-        targetType: 'system_setting',
-        targetId: key,
-        oldValue: oldSetting ? oldSetting.value : null,
-        newValue: value,
-        reason,
-        req
-      });
-
-      res.json({ message: 'Setting updated successfully' });
+      res.json({ message: 'Settings updated successfully', updated: results });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      logger.error(`updateSystemSettings error: ${error.message}`);
+      res.status(500).json({ message: 'Internal server error' });
     }
   }
 

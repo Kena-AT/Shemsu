@@ -120,10 +120,10 @@ const CategoryPage = () => {
                 </h4>
                 <div className="flex items-center gap-2 mb-4">
                   <div className="flex-1 bg-slate-50 border border-slate-200 rounded p-2 text-xs">
-                    <span className="text-slate-400">$</span> 0
+                    <span className="text-slate-400">ETB</span> 0
                   </div>
                   <div className="flex-1 bg-slate-50 border border-slate-200 rounded p-2 text-xs">
-                    <span className="text-slate-400">$</span> {priceRange}
+                    <span className="text-slate-400">ETB</span> {priceRange}
                   </div>
                 </div>
                 <input 
@@ -214,8 +214,8 @@ const CategoryPage = () => {
                     <h3 className="font-bold text-lg mb-1 group-hover:text-blue-600 transition-colors line-clamp-1">{p.name}</h3>
                     <p className="text-xs text-slate-500 mb-3 line-clamp-1">{p.description || 'Premium quality guaranteed.'}</p>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-xl font-black">${parseFloat(p.price).toFixed(2)}</span>
-                      <span className="text-sm text-slate-400 line-through">${(parseFloat(p.price) * 1.2).toFixed(2)}</span>
+                      <span className="text-xl font-black">ETB {parseFloat(p.price).toFixed(2)}</span>
+                      <span className="text-sm text-slate-400 line-through">ETB {(parseFloat(p.price) * 1.2).toFixed(2)}</span>
                     </div>
                   </motion.div>
                 ))}
