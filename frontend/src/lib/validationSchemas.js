@@ -15,6 +15,7 @@ export const registerSchema = z.object({
 });
 
 export const checkoutSchema = z.object({
+  city: z.string().min(2, 'City is required'),
   subcity: z.string().min(2, 'Subcity is required'),
   phone: z
     .string()
@@ -42,7 +43,10 @@ export const validateWithZod = (schema, data) => {
   if (result.success) return { success: true, errors: {} };
 
   const errors = {};
-  result.error.errors.forEach(err => {
+  // Zod uses .issues for error details, .errors is usually an alias
+  const issues = result.error.issues || result.error.errors || [];
+  
+  issues.forEach(err => {
     const field = err.path[0];
     if (field && !errors[field]) {
       errors[field] = err.message;

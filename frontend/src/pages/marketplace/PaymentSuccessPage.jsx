@@ -71,7 +71,7 @@ const PaymentSuccessPage = () => {
         <div className="space-y-4">
           <Button 
             className="w-full" 
-            onClick={() => navigate('/orders')}
+            onClick={() => navigate('/app/orders')}
             variant={isFailed ? 'outline' : 'primary'}
           >
             <ShoppingBag size={20} className="mr-2" />
@@ -79,7 +79,7 @@ const PaymentSuccessPage = () => {
           </Button>
           
           <button 
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/app/marketplace')}
             className="text-gray-500 hover:text-blue-600 font-medium flex items-center justify-center w-full transition-colors"
           >
             Continue Shopping

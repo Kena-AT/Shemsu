@@ -14,12 +14,14 @@ import {
   Minus, 
   Plus, 
   Package,
-  Info
+  Info,
+  Award
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useProducts } from '../../hooks/useProducts';
 import { useCart } from '../../hooks/useCart';
 import Footer from '../../components/layout/Footer';
+import ReviewSection from '../../components/marketplace/ReviewSection';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -120,12 +122,17 @@ const ProductDetails = () => {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className={`w-4 h-4 ${i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-slate-200'}`} />
+                    <Star key={i} className={`w-4 h-4 ${i < Math.round(product.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-slate-200'}`} />
                   ))}
-                  <span className="text-sm font-bold ml-1">4.9</span>
+                  <span className="text-sm font-bold ml-1">{product.rating || '0.0'}</span>
                 </div>
                 <span className="text-slate-300">|</span>
-                <span className="text-sm text-slate-500 font-medium underline cursor-pointer">1.2k reviews</span>
+                <span 
+                  className="text-sm text-slate-500 font-medium underline cursor-pointer"
+                  onClick={() => setActiveTab('Reviews')}
+                >
+                  {product.reviewCount || 0} reviews
+                </span>
                 <span className="text-slate-300">|</span>
                 <span className="text-sm text-emerald-600 font-bold">{product.stock > 0 ? 'In Stock' : 'Out of Stock'}</span>
               </div>
@@ -206,8 +213,15 @@ const ProductDetails = () => {
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Fast Delivery</span>
               </div>
               <div className="flex flex-col items-center text-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-slate-400" />
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Verified Vendor</span>
+                <div className="relative">
+                  <ShieldCheck className={`w-5 h-5 ${product.seller?.totalItemsSold >= 30 ? 'text-blue-600' : 'text-slate-400'}`} />
+                  {product.seller?.totalItemsSold >= 30 && (
+                    <Award className="w-3 h-3 text-orange-500 absolute -top-1 -right-1 fill-orange-500" />
+                  )}
+                </div>
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${product.seller?.totalItemsSold >= 30 ? 'text-blue-600' : 'text-slate-500'}`}>
+                  {product.seller?.totalItemsSold >= 30 ? 'Top Rated Vendor' : 'Verified Vendor'}
+                </span>
               </div>
               <div className="flex flex-col items-center text-center gap-2">
                 <RotateCcw className="w-5 h-5 text-slate-400" />
@@ -270,27 +284,11 @@ const ProductDetails = () => {
               </div>
             )}
             {activeTab === 'Reviews' && (
-              <div className="space-y-8">
-                <div className="flex items-center gap-8 p-8 bg-slate-50 rounded-3xl">
-                  <div className="text-center">
-                    <div className="text-5xl font-black mb-2">4.9</div>
-                    <div className="flex items-center gap-0.5 mb-1">
-                      {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
-                    </div>
-                    <div className="text-xs text-slate-400 font-bold uppercase tracking-widest">1,240 Reviews</div>
-                  </div>
-                  <div className="flex-1 space-y-2 hidden sm:block">
-                    {[5, 4, 3, 2, 1].map(star => (
-                      <div key={star} className="flex items-center gap-4">
-                        <span className="text-xs font-bold w-4">{star}</span>
-                        <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
-                          <div className="h-full bg-yellow-400" style={{ width: star === 5 ? '85%' : star === 4 ? '10%' : '2%' }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <ReviewSection 
+                productId={id} 
+                averageRating={product.rating} 
+                reviewCount={product.reviewCount} 
+              />
             )}
           </div>
         </div>

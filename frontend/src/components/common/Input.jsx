@@ -14,9 +14,11 @@ const Input = ({ label, icon: Icon, error, className, ...props }) => {
         )}
         <input
           className={twMerge(
-            'w-full rounded-lg border border-gray-200 py-3 pl-10 pr-4 transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none placeholder:text-gray-400',
+            'w-full rounded-lg border py-3 transition-all outline-none placeholder:text-gray-400',
             Icon ? 'pl-10' : 'pl-4',
-            error ? 'border-red-500 focus:ring-red-500/10' : 'border-gray-200',
+            error 
+              ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100' 
+              : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100',
             className
           )}
           {...props}

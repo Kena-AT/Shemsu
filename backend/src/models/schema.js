@@ -177,6 +177,20 @@ const orderItems = pgTable('order_items', {
   statusIdx: index('item_status_idx').on(table.status),
 }));
 
+const reviews = pgTable('reviews', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  productId: uuid('product_id').notNull().references(() => products.id),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  rating: integer('rating').notNull(), // 1-5
+  comment: text('comment'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  productIdx: index('review_product_idx').on(table.productId),
+  userIdx: index('review_user_idx').on(table.userId),
+  ratingCheck: sql`check (${table.rating} >= 1 and ${table.rating} <= 5)`,
+}));
+
 // Relations
 const usersRelations = relations(users, ({ one, many }) => ({
   products: many(products),
@@ -185,6 +199,7 @@ const usersRelations = relations(users, ({ one, many }) => ({
     references: [carts.userId],
   }),
   orders: many(orders),
+  reviews: many(reviews),
 }));
 
 const categoriesRelations = relations(categories, ({ one, many }) => ({
@@ -210,6 +225,7 @@ const productsRelations = relations(products, ({ one, many }) => ({
   }),
   cartItems: many(cartItems),
   orderItems: many(orderItems),
+  reviews: many(reviews),
 }));
 
 const cartsRelations = relations(carts, ({ one, many }) => ({
@@ -272,6 +288,7 @@ module.exports = {
   cartItems,
   orders,
   orderItems,
+  reviews,
   usersRelations,
   categoriesRelations,
   productsRelations,
@@ -279,4 +296,14 @@ module.exports = {
   cartItemsRelations,
   ordersRelations,
   orderItemsRelations,
+  reviewsRelations: relations(reviews, ({ one }) => ({
+    product: one(products, {
+      fields: [reviews.productId],
+      references: [products.id],
+    }),
+    user: one(users, {
+      fields: [reviews.userId],
+      references: [users.id],
+    }),
+  })),
 };

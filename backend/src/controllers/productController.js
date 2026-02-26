@@ -1,5 +1,5 @@
 const { db, pool } = require('../config/db');
-const { products, categories, users, sellerVerifications } = require('../models/schema');
+const { products, categories, users, sellerVerifications, reviews, orderItems } = require('../models/schema');
 const { eq, and, ilike, desc, sql } = require('drizzle-orm');
 const logger = require('../config/logger');
 
@@ -54,7 +54,9 @@ exports.getProducts = async (req, res) => {
 // Get single product (Public/Buyer view)
 exports.getProductById = async (req, res) => {
   try {
-    const [item] = await db.select({
+    const productId = req.params.id;
+
+    const items = await db.select({
       id: products.id,
       name: products.name,
       description: products.description,
@@ -63,6 +65,7 @@ exports.getProductById = async (req, res) => {
       images: products.images,
       attributes: products.attributes,
       createdAt: products.createdAt,
+      categoryId: products.categoryId,
       category: categories,
       seller: {
         id: users.id,
@@ -74,16 +77,46 @@ exports.getProductById = async (req, res) => {
     .innerJoin(users, eq(products.sellerId, users.id))
     .innerJoin(categories, eq(products.categoryId, categories.id))
     .where(and(
-      eq(products.id, req.params.id),
+      eq(products.id, productId),
       eq(products.isDeleted, false),
       eq(products.moderationStatus, 'approved'),
       eq(users.status, 'active'),
       eq(users.isDeleted, false)
     ));
 
-    if (!item) return res.status(404).json({ message: 'Product not found' });
-    res.json(item);
+    if (items.length === 0) return res.status(404).json({ message: 'Product not found' });
+    const item = items[0];
+
+    // 1. Get average rating and count
+    const [ratingStats] = await db.select({
+      avgRating: sql`avg(${reviews.rating})::numeric(10,1)`,
+      reviewCount: sql`count(${reviews.id})::integer`
+    })
+    .from(reviews)
+    .where(eq(reviews.productId, productId));
+
+    // 2. Get seller total items sold (for "Top Rated Vendor" badge)
+    // A vendor is Top Rated if they sold 30+ items
+    const [salesStats] = await db.select({
+      totalItemsSold: sql`sum(${orderItems.quantity})::integer`
+    })
+    .from(orderItems)
+    .where(and(
+      eq(orderItems.sellerId, item.seller.id),
+      eq(orderItems.status, 'delivered')
+    ));
+
+    res.json({
+      ...item,
+      rating: parseFloat(ratingStats.avgRating || 0),
+      reviewCount: ratingStats.reviewCount || 0,
+      seller: {
+        ...item.seller,
+        totalItemsSold: parseInt(salesStats.totalItemsSold || 0)
+      }
+    });
   } catch (err) {
+    logger.error('Error fetching product by ID', err);
     res.status(500).json({ message: 'Error fetching product' });
   }
 };

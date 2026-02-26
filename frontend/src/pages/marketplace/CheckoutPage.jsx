@@ -30,21 +30,34 @@ const CheckoutPage = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
+    // Clear only this specific field's error when the user starts typing
+    if (errors && errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
     }
   };
 
   const validate = () => {
     const { success, errors: validationErrors } = validateWithZod(checkoutSchema, formData);
+    console.log('Validation results:', { success, validationErrors });
     setErrors(validationErrors);
+    if (!success) {
+      toast.error('Please check your shipping details');
+    }
     return success;
   };
 
   const handleCheckout = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
-
+    console.log('Attempting checkout with data:', formData);
+    
+    if (!validate()) {
+      console.warn('Checkout aborted: Validation failed');
+      return;
+    }
 
     try {
       const orderData = {
@@ -52,14 +65,20 @@ const CheckoutPage = () => {
         cartId: cart.id
       };
 
+      console.log('Sending order data to API:', orderData);
       const result = await checkoutMutation.mutateAsync(orderData);
+      console.log('Order result:', result);
       
       if (result.checkoutUrl) {
         toast.success('Redirecting to payment...');
         window.location.href = result.checkoutUrl;
+      } else {
+        console.error('No checkout URL returned from server');
+        toast.error('Unexpected response from server. No payment link found.');
       }
     } catch (err) {
-      // Error handled by mutation toast
+      console.error('Checkout error:', err);
+      toast.error(err.response?.data?.message || 'Checkout failed. Please try again.');
     }
   };
 
@@ -90,7 +109,7 @@ const CheckoutPage = () => {
     <div className="min-h-screen bg-gray-50 pt-20 pb-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <button 
-          onClick={() => navigate('/cart')}
+          onClick={() => navigate('/app/cart')}
           className="flex items-center text-gray-600 hover:text-blue-600 mb-6 transition-colors"
         >
           <ChevronLeft size={20} className="mr-1" />
@@ -125,7 +144,7 @@ const CheckoutPage = () => {
                     placeholder="e.g. Bole"
                     value={formData.subcity} 
                     onChange={handleInputChange}
-                    error={errors.subcity}
+                    error={errors?.subcity}
                     icon={MapPin}
                   />
                 </div>
@@ -182,9 +201,15 @@ const CheckoutPage = () => {
               <div className="flex items-center justify-between p-4 border-2 border-blue-600 rounded-xl bg-blue-50/50">
                 <div className="flex items-center">
                   <img 
-                    src="https://chapa.co/favicon.png" 
+                    src="https://chapa.co/favicon.ico" 
                     alt="Chapa" 
                     className="h-8 w-8 object-contain mr-3" 
+                    onError={(e) => {
+                      e.target.src = 'https://chapa.co/assets/logos/chapa_logo_only.png'; // Attempt common alternative
+                      e.target.onerror = () => {
+                        e.target.style.display = 'none'; // Hide if both fail
+                      };
+                    }}
                   />
                   <div>
                     <span className="font-bold text-gray-900">Chapa</span>

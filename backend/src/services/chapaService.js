@@ -19,40 +19,53 @@ class ChapaService {
   async initializePayment(data) {
     if (!this.secretKey) throw new Error('CHAPA_SECRET_KEY is not configured');
 
-    const response = await fetch(`${this.baseUrl}/transaction/initialize`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.secretKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        amount: data.amount,
-        currency: data.currency || 'ETB',
-        email: data.email,
-        first_name: data.first_name,
-        last_name: data.last_name,
-        tx_ref: data.tx_ref,
-        callback_url: data.callback_url,
-        return_url: data.return_url,
-        customization: {
-          title: 'Shemsu Market',
-          description: `Payment for Order ${data.tx_ref}`,
-          logo: data.logo || '', // Optional
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+    try {
+      const response = await fetch(`${this.baseUrl}/transaction/initialize`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.secretKey}`,
+          'Content-Type': 'application/json',
         },
-      }),
-    });
+        signal: controller.signal,
+        body: JSON.stringify({
+          amount: data.amount,
+          currency: data.currency || 'ETB',
+          email: data.email,
+          first_name: data.first_name,
+          last_name: data.last_name,
+          tx_ref: data.tx_ref,
+          callback_url: data.callback_url,
+          return_url: data.return_url,
+          customization: {
+            title: 'Shemsu Market',
+            description: `Payment for Order ${data.tx_ref}`,
+            logo: data.logo || '', // Optional
+          },
+        }),
+      });
 
-    const result = await response.json();
-    
-    if (!response.ok) {
-      console.error('Chapa Initialization Error:', result);
-      const errorMessage = typeof result.message === 'string' 
-        ? result.message 
-        : JSON.stringify(result.message);
-      throw new Error(errorMessage || 'Failed to initialize Chapa payment');
+      clearTimeout(timeoutId);
+      const result = await response.json();
+      
+      if (!response.ok) {
+        console.error('Chapa Initialization Error:', result);
+        const errorMessage = typeof result.message === 'string' 
+          ? result.message 
+          : JSON.stringify(result.message);
+        throw new Error(errorMessage || 'Failed to initialize Chapa payment');
+      }
+
+      return result.data;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error('Chapa API request timed out after 10 seconds. Please try again.');
+      }
+      throw error;
     }
-
-    return result.data;
   }
 
   /**

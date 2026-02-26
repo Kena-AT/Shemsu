@@ -75,6 +75,7 @@ exports.getCart = async (req, res) => {
     }, {});
 
     res.json({
+      id: cart.id,
       items: transformedItems,
       vendorGroups,
       totalItems: transformedItems.length,

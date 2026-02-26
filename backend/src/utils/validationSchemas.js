@@ -66,10 +66,12 @@ const cartItemSchema = z.object({
 
 const checkoutSchema = z.object({
   shippingAddress: z.object({
-    fullName: z.string().min(2, 'Full name is required'),
-    phone: z.string().min(9, 'Valid phone number is required'),
-    address: z.string().min(5, 'Specific address is required'),
     city: z.string().min(2, 'City is required'),
+    subcity: z.string().min(2, 'Subcity is required'),
+    woreda: z.string().optional(),
+    houseNo: z.string().optional(),
+    phone: z.string().regex(/^(\+251|0)9[0-9]{8}$/, 'Enter a valid Ethiopian phone number'),
+    additionalInfo: z.string().optional(),
   }),
   cartId: z.string().uuid().optional(),
 });

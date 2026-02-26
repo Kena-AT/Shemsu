@@ -29,6 +29,7 @@ class OrderController {
    * This initiates the Chapa payment flow.
    */
   async createOrder(req, res) {
+    logger.info('Received createOrder request', { userId: req.user.id, body: req.body });
     try {
       const { shippingAddress, cartId } = req.body;
       const userId = req.user.id;
@@ -44,8 +45,10 @@ class OrderController {
       });
 
       if (!cart || cart.items.length === 0) {
+        logger.warn('Checkout failed: Cart is empty or not found', { userId });
         return res.status(400).json({ message: 'Cart is empty' });
       }
+      logger.info('Fetched cart for checkout', { cartId: cart.id, itemCount: cart.items.length });
 
       // 2. Calculate Total and Prepare Items Snapshots
       let totalAmount = 0;
@@ -92,6 +95,7 @@ class OrderController {
       }
 
       // 7. Initialize Chapa Payment
+      logger.info('Initializing Chapa payment', { txRef, totalAmount, email: user.email });
       const chapaData = await chapaService.initializePayment({
         amount: totalAmount,
         currency: 'ETB',
@@ -102,6 +106,9 @@ class OrderController {
         callback_url: `${process.env.BACKEND_URL}/api/orders/webhook`, // Your webhook URL
         return_url: `${process.env.FRONTEND_URL}/app/checkout/success?tx_ref=${txRef}`,
       });
+
+      logger.info('Chapa payment initialized', { txRef, checkoutUrl: chapaData.checkout_url });
+
 
       res.status(201).json({
         message: 'Order created',

@@ -60,8 +60,11 @@ const Login = () => {
               icon={Lock}
               type="password"
               value={formData.password}
-              error={errors.password}
-              onChange={(e) => { setFormData({ ...formData, password: e.target.value }); setErrors(p => ({...p, password: null})); }}
+              error={errors?.password}
+              onChange={(e) => { 
+                setFormData({ ...formData, password: e.target.value }); 
+                if (errors?.password) setErrors(p => { const n = {...p}; delete n.password; return n; });
+              }}
             />
           </div>
 

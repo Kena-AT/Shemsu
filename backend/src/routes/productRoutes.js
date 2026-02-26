@@ -13,6 +13,10 @@ router.get('/categories', categoryController.getCategories);
 router.get('/seller', authenticate, authorize('seller'), productController.getSellerProducts);
 router.get('/:id', productController.getProductById);
 
+// Review routes (Nested)
+const reviewRoutes = require('./reviewRoutes');
+router.use('/:id/reviews', reviewRoutes);
+
 // Protected routes (Sellers only)
 router.post('/', 
   authenticate, 
