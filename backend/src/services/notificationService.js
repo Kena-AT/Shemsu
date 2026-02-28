@@ -4,10 +4,15 @@ const logger = require('../config/logger');
 class NotificationService {
   constructor() {
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // STARTTLS — required for port 587
       auth: {
         user: process.env.SMTP_EMAIL,
         pass: process.env.SMTP_PASSWORD,
+      },
+      tls: {
+        rejectUnauthorized: false, // Needed on some cloud platforms
       },
     });
 

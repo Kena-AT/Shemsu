@@ -18,6 +18,9 @@ const hpp = require('hpp');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust Render/Vercel reverse proxy (required for rate limiting and IP detection)
+app.set('trust proxy', 1);
+
 // Sentry Init (must be first)
 initSentry(app);
 
