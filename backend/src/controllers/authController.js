@@ -2,7 +2,7 @@ const argon2 = require('argon2');
 const jwt = require('jsonwebtoken');
 const { eq, and } = require('drizzle-orm');
 const { db } = require('../config/db');
-const { users } = require('../models/schema');
+const { users, sellerVerifications } = require('../models/schema');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailService');
 const notificationService = require('../services/notificationService');
 const logger = require('../config/logger');
@@ -38,7 +38,8 @@ const generateTokens = (user) => {
 // Register
 exports.register = async (req, res, next) => {
   try {
-    const { email, password, fullName, role } = req.body;
+    let { email, password, fullName, role } = req.body;
+    email = email.toLowerCase();
 
     // 1. Validate role (Buyer/Seller only)
     if (!['buyer', 'seller'].includes(role)) {
@@ -84,7 +85,8 @@ exports.register = async (req, res, next) => {
 // Verify Email
 exports.verifyEmail = async (req, res, next) => {
   try {
-    const { email, code } = req.body;
+    let { email, code } = req.body;
+    email = email.toLowerCase();
 
     const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
@@ -133,9 +135,24 @@ exports.verifyEmail = async (req, res, next) => {
 // Login
 exports.login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+    email = email.toLowerCase();
 
-    const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const [user] = await db.select({
+      id: users.id,
+      email: users.email,
+      fullName: users.fullName,
+      password: users.password,
+      role: users.role,
+      isVerified: users.isVerified,
+      failedLoginAttempts: users.failedLoginAttempts,
+      lastLoginAttemptAt: users.lastLoginAttemptAt,
+      verificationStatus: sellerVerifications.status
+    })
+    .from(users)
+    .leftJoin(sellerVerifications, eq(users.id, sellerVerifications.sellerId))
+    .where(eq(users.email, email))
+    .limit(1);
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -173,6 +190,7 @@ exports.login = async (req, res, next) => {
         email: user.email,
         fullName: user.fullName,
         role: user.role,
+        verificationStatus: user.verificationStatus || 'none'
       },
     });
   } catch (error) {
@@ -183,7 +201,8 @@ exports.login = async (req, res, next) => {
 // Forgot Password
 exports.forgotPassword = async (req, res, next) => {
   try {
-    const { email } = req.body;
+    let { email } = req.body;
+    email = email.toLowerCase();
     const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
     // Always return success to prevent enumeration
@@ -211,7 +230,8 @@ exports.forgotPassword = async (req, res, next) => {
 // Reset Password
 exports.resetPassword = async (req, res, next) => {
   try {
-    const { email, token, newPassword } = req.body;
+    let { email, token, newPassword } = req.body;
+    email = email.toLowerCase();
 
     const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
@@ -247,7 +267,17 @@ exports.refresh = async (req, res, next) => {
     if (!refreshToken) return res.status(401).json({ message: 'Unauthorized' });
 
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-    const [user] = await db.select().from(users).where(eq(users.id, decoded.id)).limit(1);
+    const [user] = await db.select({
+      id: users.id,
+      email: users.email,
+      fullName: users.fullName,
+      role: users.role,
+      verificationStatus: sellerVerifications.status
+    })
+    .from(users)
+    .leftJoin(sellerVerifications, eq(users.id, sellerVerifications.sellerId))
+    .where(eq(users.id, decoded.id))
+    .limit(1);
 
     if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
@@ -261,7 +291,18 @@ exports.refresh = async (req, res, next) => {
 // Get current user profile
 exports.getMe = async (req, res, next) => {
   try {
-    const [user] = await db.select().from(users).where(eq(users.id, req.user.id)).limit(1);
+    const [user] = await db.select({
+      id: users.id,
+      email: users.email,
+      fullName: users.fullName,
+      role: users.role,
+      verificationStatus: sellerVerifications.status
+    })
+    .from(users)
+    .leftJoin(sellerVerifications, eq(users.id, sellerVerifications.sellerId))
+    .where(eq(users.id, req.user.id))
+    .limit(1);
+
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     res.status(200).json({
@@ -270,6 +311,7 @@ exports.getMe = async (req, res, next) => {
         email: user.email,
         fullName: user.fullName,
         role: user.role,
+        verificationStatus: user.verificationStatus || 'none'
       },
     });
   } catch (error) {

@@ -173,7 +173,7 @@ const SecurityMiddleware = () => {
                     <button className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline">Add New</button>
                   </div>
                   <div className="space-y-2">
-                    {['http://localhost:3000', import.meta.env.VITE_FRONTEND_URL].filter(Boolean).map((origin) => (
+                    {['http://localhost:3100', import.meta.env.VITE_FRONTEND_URL].filter(Boolean).map((origin) => (
                       <div key={origin} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group">
                         <span className="text-xs font-bold text-slate-700 font-mono">{origin}</span>
                         <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-200"></div>

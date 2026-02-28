@@ -158,17 +158,17 @@ const SellerVerificationQueue = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {queue?.map((seller, i) => {
-                const statusInfo = getStatusInfo(seller.verificationStatus);
+                const statusInfo = getStatusInfo(seller.status);
                 return (
                   <tr key={seller.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-6 py-4 text-xs font-bold text-slate-400 text-center">{i + 1}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 uppercase">
-                          {seller.legalName?.charAt(0) || 'S'}
+                          {seller.fullName?.charAt(0) || 'S'}
                         </div>
                         <div className="flex flex-col text-left">
-                          <span className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors uppercase tracking-tight">{seller.legalName}</span>
+                          <span className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors uppercase tracking-tight">{seller.fullName}</span>
                           <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">ID: SL-{seller.id}292</span>
                         </div>
                       </div>
@@ -252,7 +252,7 @@ const SellerVerificationQueue = () => {
                   {reviewAction === 'approve' ? 'Approve Verification' : 'Reject Submission'}
                 </h3>
                 <p className="text-slate-500 text-sm mt-1">
-                  Finalizing review for <strong className="uppercase">{editingSeller.legalName}</strong>
+                  Finalizing review for <strong className="uppercase">{editingSeller.fullName}</strong>
                 </p>
               </div>
 

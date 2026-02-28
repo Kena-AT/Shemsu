@@ -38,7 +38,16 @@ const ProductDetails = () => {
   const [activeTab, setActiveTab] = useState('Description');
   const [selectedColor, setSelectedColor] = useState('Default');
 
+  React.useEffect(() => {
+    if (product) {
+      // trackPageView/trackEvent removed
+    }
+  }, [product]);
+
   const handleAddToCart = () => {
+    if (product) {
+      // trackEvent removed
+    }
     addMutation.mutate({
       productId: product.id,
       quantity,
@@ -47,6 +56,9 @@ const ProductDetails = () => {
   };
 
   const handleBuyNow = async () => {
+    if (product) {
+      // trackEvent removed
+    }
     try {
       await addMutation.mutateAsync({
         productId: product.id,

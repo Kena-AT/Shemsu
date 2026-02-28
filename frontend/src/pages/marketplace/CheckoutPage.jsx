@@ -16,6 +16,10 @@ const CheckoutPage = () => {
   const { data: cart, isLoading: cartLoading } = useGetCart();
   const checkoutMutation = useCheckout();
 
+  React.useEffect(() => {
+    // trackPageView removed
+  }, []);
+
   const [formData, setFormData] = useState({
     city: 'Addis Ababa',
     subcity: '',
@@ -58,6 +62,8 @@ const CheckoutPage = () => {
       console.warn('Checkout aborted: Validation failed');
       return;
     }
+
+    // trackEvent removed
 
     try {
       const orderData = {

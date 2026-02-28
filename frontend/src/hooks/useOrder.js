@@ -55,7 +55,7 @@ export const useOrder = () => {
   const useGetSellerAnalytics = () => useQuery({
     queryKey: ['seller-analytics'],
     queryFn: async () => {
-      const { data } = await api.get('/orders/analytics/seller');
+      const { data } = await api.get('/seller/analytics');
       return data;
     },
     staleTime: 1000 * 60 * 5,

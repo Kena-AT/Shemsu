@@ -14,6 +14,8 @@ import VerifyEmail from './pages/auth/VerifyEmail';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import Unauthorized from './pages/auth/Unauthorized';
+import AccountSettings from './pages/auth/AccountSettings';
+import LogoutPage from './pages/auth/LogoutPage';
 
 // Marketplace Pages
 import MarketplaceHome from './pages/marketplace/MarketplaceHome';
@@ -32,6 +34,9 @@ import SellerDashboard from './pages/dashboard/seller/SellerDashboard';
 import ProductList from './pages/dashboard/seller/ProductList';
 import AddEditProduct from './pages/dashboard/seller/AddEditProduct';
 import ManageOrders from './pages/dashboard/seller/ManageOrders';
+import SellerAnalytics from './pages/dashboard/seller/SellerAnalytics';
+import SellerVerificationPage from './pages/dashboard/seller/SellerVerificationPage';
+import SellerBankDetails from './pages/dashboard/seller/SellerBankDetails';
 
 // Admin Dashboard Pages
 import AdminLoginPage from './pages/dashboard/admin/AdminLoginPage';
@@ -47,6 +52,20 @@ import SystemSettings from './pages/dashboard/admin/SystemSettings';
 import AdminProfile from './pages/dashboard/admin/AdminProfile';
 import AuditLogs from './pages/dashboard/admin/AuditLogs';
 import SecurityMiddleware from './pages/dashboard/admin/SecurityMiddleware';
+import AdminReports from './pages/dashboard/admin/AdminReports';
+import SellerPayouts from './pages/dashboard/admin/SellerPayouts';
+
+// System Pages
+import Error403 from './pages/system/Error403';
+import Error404 from './pages/system/Error404';
+import Error500 from './pages/system/Error500';
+
+// Public Pages
+import LandingPage from './pages/public/LandingPage';
+import ContactUs from './pages/public/ContactUs';
+import TermsOfService from './pages/public/TermsOfService';
+import PrivacyPolicy from './pages/public/PrivacyPolicy';
+import Documentation from './pages/public/Documentation';
 
 // Layout Components
 import Navbar from './components/layout/Navbar';
@@ -97,6 +116,7 @@ const SellerLayout = () => {
 };
 
 function App() {
+  console.log("App Component: Rendering...");
   const { setUser, setLoading } = useAuthStore();
 
   useEffect(() => {
@@ -136,16 +156,26 @@ function App() {
               <Route path="checkout/success" element={<ProtectedRoute allowedRoles={['buyer']}><PaymentSuccessPage /></ProtectedRoute>} />
               <Route path="checkout/error" element={<ProtectedRoute allowedRoles={['buyer']}><PaymentFailedPage /></ProtectedRoute>} />
               <Route path="orders" element={<ProtectedRoute allowedRoles={['buyer']}><OrderHistory /></ProtectedRoute>} />
-              <Route path="profile" element={<div className="p-20 text-center font-bold">User Profile (Coming Soon)</div>} />
+              <Route path="profile" element={<ProtectedRoute allowedRoles={['buyer', 'seller', 'admin']}><AccountSettings /></ProtectedRoute>} />
+              
+              {/* Public/Legal Routes under /app for nested footer/nav if preferred, but usually they are standalone */}
+              <Route path="contact" element={<ContactUs />} />
+              <Route path="terms" element={<TermsOfService />} />
+              <Route path="privacy" element={<PrivacyPolicy />} />
+              <Route path="docs" element={<Documentation />} />
             </Route>
             
+            {/* Standalone Public Pages */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/logout" element={<LogoutPage />} />
+
             {/* Auth Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
+            <Route path="/unauthorized" element={<Error403 />} />
 
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -160,6 +190,8 @@ function App() {
               <Route path="orders/:id" element={<AdminOrderDetails />} />
               <Route path="audit" element={<AuditLogs />} />
               <Route path="security" element={<SecurityMiddleware />} />
+              <Route path="analytics" element={<AdminReports />} />
+              <Route path="payouts" element={<SellerPayouts />} />
               <Route path="settings" element={<SystemSettings />} />
               <Route path="profile" element={<AdminProfile />} />
             </Route>
@@ -171,11 +203,14 @@ function App() {
               <Route path="products/new" element={<AddEditProduct />} />
               <Route path="products/edit/:id" element={<AddEditProduct />} />
               <Route path="orders" element={<ManageOrders />} />
+              <Route path="analytics" element={<SellerAnalytics />} />
+              <Route path="verify" element={<SellerVerificationPage />} />
+              <Route path="finance" element={<SellerBankDetails />} />
             </Route>
 
-            {/* Home welcome redirect if needed, but for now fallback */}
-            <Route path="/" element={<div className="h-screen flex items-center justify-center font-black">WELCOME (Redirect to /app in production)</div>} />
-            <Route path="*" element={<div className="h-screen flex items-center justify-center font-black uppercase tracking-tighter text-9xl text-gray-100">404</div>} />
+            {/* Error Pages */}
+            <Route path="/500" element={<Error500 />} />
+            <Route path="*" element={<Error404 />} />
           </Routes>
         </div>
       </Router>

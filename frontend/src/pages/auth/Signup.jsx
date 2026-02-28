@@ -85,7 +85,7 @@ const Signup = () => {
       return;
     }
     setErrors({});
-    register.mutate({ ...formData, role }, {
+    register.mutate({ ...formData, email: formData.email.toLowerCase(), role }, {
       onSuccess: () => toast.success('Registration successful! Please check your email.'),
       onError: (err) => {
         const serverErrors = err.response?.data?.errors;
@@ -105,14 +105,11 @@ const Signup = () => {
 
       {/* ── Left: Branding Panel ─────────────────────────────────────────── */}
       <div className="hidden lg:flex w-[48%] relative flex-col justify-between p-10 overflow-hidden bg-blue-600">
-        {/* Background city image */}
+        {/* Custom provided background image */}
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1441158374653-b64ac6a3e9ab?w=800')" }}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/signup_hero.png')" }}
         />
-        {/* Blue gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-600/90 via-blue-600/80 to-blue-700/95" />
-
         {/* Content */}
         <div className="relative z-10">
           <ShemsuLogo />

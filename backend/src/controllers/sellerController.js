@@ -38,11 +38,11 @@ class SellerController {
       `);
 
       res.json({
-        totalRevenue: parseFloat(stats.rows[0].total_revenue),
-        totalOrders: parseInt(stats.rows[0].total_orders),
-        revenueTrend: dailyRevenue.rows.map(r => ({
+        revenue: parseFloat(stats.rows[0].total_revenue),
+        orders: parseInt(stats.rows[0].total_orders),
+        chartData: dailyRevenue.rows.map(r => ({
           date: r.date,
-          revenue: parseFloat(r.revenue)
+          value: parseFloat(r.revenue)
         }))
       });
     } catch (error) {
@@ -61,7 +61,7 @@ class SellerController {
         .where(eq(sellerVerifications.sellerId, sellerId))
         .limit(1);
       
-      res.json(verification || { status: 'none' });
+      res.json(verification || { status: 'none', sellerId });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }

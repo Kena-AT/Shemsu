@@ -43,7 +43,15 @@ const rateLimiter = rateLimit({
     status: 'error',
     message: 'Too many requests from this IP, please try again after 15 minutes',
   },
-  skip: (req) => req.path === '/health',
+  skip: (req) => {
+    // Skip for health checks
+    if (req.path === '/health') return true;
+    // Skip if internal bypass header is present (for k6)
+    if (req.headers['x-stress-test'] === 'true') return true;
+    // Skip in test environment
+    if (process.env.NODE_ENV === 'test') return true;
+    return false;
+  },
 });
 
 module.exports = rateLimiter;

@@ -17,6 +17,7 @@ class NotificationService {
 
     // Start background queue processor
     this.processorInterval = setInterval(() => this.processQueue(), 60000); // Regular check every minute
+    if (this.processorInterval.unref) this.processorInterval.unref();
   }
 
   /**

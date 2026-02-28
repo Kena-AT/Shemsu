@@ -78,9 +78,12 @@ app.get('/health', (req, res) => {
 // Sentry Error Handler (must be after all controllers, before other error handlers)
 setupSentryErrorHandler(app);
 
-// Final Error Handler
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  logger.info(`Server is running on port ${PORT} in ${process.env.NODE_ENV} mode`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    logger.info(`Server is running on port ${PORT} in ${process.env.NODE_ENV} mode`);
+  });
+}
+
+module.exports = app;

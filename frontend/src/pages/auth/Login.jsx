@@ -20,7 +20,7 @@ const Login = () => {
       return;
     }
     setErrors({});
-    login.mutate(formData, {
+    login.mutate({ ...formData, email: formData.email.toLowerCase() }, {
       onSuccess: () => toast.success('Welcome back!'),
       onError: (err) => toast.error(err.response?.data?.message || 'Login failed'),
     });

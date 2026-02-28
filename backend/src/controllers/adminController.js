@@ -21,7 +21,8 @@ class AdminController {
    */
   async login(req, res) {
     try {
-      const { email, password } = req.body;
+      let { email, password } = req.body;
+      email = email.toLowerCase();
 
       // 1. Fetch user (Only if role is admin)
       const [user] = await db.select()
@@ -353,10 +354,8 @@ class AdminController {
         .where(eq(sellerVerifications.id, id))
         .returning();
 
-      // If approved, verify the user account as well
-      if (status === 'approved') {
-        await db.update(users).set({ isVerified: true }).where(eq(users.id, verification.sellerId));
-      }
+      // If approved, user is now an active seller.
+      // We keep is_verified for email verification purposes.
 
       await auditLogger.logAction({
         adminId: req.user.id,

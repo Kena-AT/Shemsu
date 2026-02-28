@@ -2,10 +2,10 @@ import React from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-const Input = ({ label, icon: Icon, error, className, ...props }) => {
+const Input = ({ label, labelClassName, icon: Icon, error, className, ...props }) => {
   return (
     <div className="w-full space-y-2">
-      {label && <label className="block text-sm font-medium text-gray-700">{label}</label>}
+      {label && <label className={twMerge("block text-sm font-medium text-gray-700", labelClassName)}>{label}</label>}
       <div className="relative">
         {Icon && (
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">

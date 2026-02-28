@@ -11,7 +11,7 @@ const AdminLoginPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    adminLogin.mutate(formData, {
+    adminLogin.mutate({ ...formData, email: formData.email.toLowerCase() }, {
       onSuccess: () => toast.success('Access Granted. Welcome, Administrator.'),
       onError: (err) => {
         toast.error(err.response?.data?.message || 'Authentication failed. Access denied.');

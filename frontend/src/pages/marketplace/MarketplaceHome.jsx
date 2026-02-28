@@ -35,7 +35,7 @@ const MarketplaceHome = () => {
       <section className="relative bg-[#0a0a0a] text-white py-16 md:py-24 overflow-hidden">
         <div className="absolute inset-0 opacity-20">
           <img 
-            src="https://images.unsplash.com/photo-1604711319203-b0e6fa05d8f5?q=80&w=2000&auto=format&fit=crop" 
+            src="/marketplace_hero_bg_1772288948993.png" 
             alt="Hero Background" 
             className="w-full h-full object-cover"
           />
@@ -47,10 +47,10 @@ const MarketplaceHome = () => {
             className="max-w-3xl"
           >
             <h1 className="text-4xl md:text-6xl font-light leading-tight mb-6">
-              Discover Quality from <span className="font-semibold">Global Vendors</span>
+              Discover Quality from <span className="font-semibold">Local Vendors</span>
             </h1>
             <p className="text-slate-400 text-base md:text-lg mb-8 max-w-xl mx-auto">
-              A refined marketplace for premium electronics, modern fashion, and elevated home decor. Curated for those who value authenticity and design.
+              A refined marketplace for electronics, modern fashion, and elevated home decor. Curated for those who value authenticity and design.
             </p>
             
             <div className="flex flex-col md:flex-row gap-4 mb-6 w-full max-w-2xl mx-auto">
@@ -75,9 +75,15 @@ const MarketplaceHome = () => {
             
             <div className="flex flex-wrap justify-center gap-3 text-sm text-slate-400">
               <span>Trending:</span>
-              <button onClick={() => navigate('/app/marketplace?search=QLED')} className="hover:text-white transition-colors">#QLED_TV</button>
-              <button onClick={() => navigate('/app/marketplace?search=Watch')} className="hover:text-white transition-colors">#Minimalist_Watches</button>
-              <button onClick={() => navigate('/app/marketplace?search=Smart%20Home')} className="hover:text-white transition-colors">#Smart_Home</button>
+              {products?.slice(0, 3).map((product) => (
+                <button 
+                  key={product.id}
+                  onClick={() => navigate(`/app/marketplace/product/${product.id}`)} 
+                  className="hover:text-white transition-colors"
+                >
+                  #{product.name.replace(/\s+/g, '_')}
+                </button>
+              ))}
             </div>
           </motion.div>
         </div>

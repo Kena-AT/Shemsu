@@ -22,6 +22,15 @@ const ProtectedRoute = ({ allowedRoles, children }) => {
     return <Navigate to="/unauthorized" replace />;
   }
 
+  // Seller Verification Lock
+  if (user?.role === 'seller' && user?.verificationStatus !== 'approved') {
+    // If they are trying to access anything other than verification page, redirect
+    const isOnVerifyPage = window.location.pathname === '/seller/verify';
+    if (!isOnVerifyPage) {
+      return <Navigate to="/seller/verify" replace />;
+    }
+  }
+
   return children ? children : <Outlet />;
 };
 

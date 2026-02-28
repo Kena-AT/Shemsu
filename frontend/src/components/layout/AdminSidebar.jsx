@@ -18,9 +18,8 @@ import { useAuthStore } from '../../state/useAuthStore';
 const navItems = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { to: '/admin/users', label: 'User Management', icon: Users },
-  { to: '/admin/verifications', label: 'Seller Verification', icon: CheckCircle },
+  { to: '/admin/verifications', label: 'Seller Verification', icon: ShieldCheck },
   { to: '/admin/moderation', label: 'Product Moderation', icon: Package },
-  { to: '/admin/orders', label: 'Global Orders', icon: CreditCard },
   { to: '/admin/payouts', label: 'Payouts', icon: CreditCard },
   { to: '/admin/analytics', label: 'Reports/Analytics', icon: BarChart3 },
   { to: '/admin/audit', label: 'Audit Logs', icon: FileText },
