@@ -162,13 +162,13 @@ exports.login = async (req, res, next) => {
       return res.status(403).json({ message: 'Please verify your email before logging in' });
     }
 
-    // Restrict Admin login from user side
-    if (user.role === 'admin') {
-      return res.status(403).json({ message: 'Administrative accounts must login via the Admin Portal.' });
-    }
-
     const isPasswordValid = await argon2.verify(user.password, password);
     if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Restrict Admin login from user side (generic error to prevent enumeration)
+    if (user.role === 'admin') {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
