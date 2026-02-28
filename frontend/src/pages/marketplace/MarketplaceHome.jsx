@@ -202,9 +202,9 @@ const MarketplaceHome = () => {
                   </div>
                   <h3 className="font-semibold mb-1 group-hover:text-blue-600 transition-colors line-clamp-1">{product.name}</h3>
                   <div className="flex items-center gap-1 mb-2">
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    <span className="text-xs font-medium">4.9</span>
-                    <span className="text-xs text-slate-400">(124 reviews)</span>
+                    <Star className={`w-3 h-3 ${product.rating > 0 ? 'fill-yellow-400 text-yellow-400' : 'text-slate-200'}`} />
+                    <span className="text-xs font-medium">{Number(product.rating || 0).toFixed(1)}</span>
+                    <span className="text-xs text-slate-400">({product.reviewCount || 0} reviews)</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-lg text-slate-900">ETB {parseFloat(product.price).toFixed(2)}</span>

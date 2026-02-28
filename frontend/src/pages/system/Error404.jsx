@@ -45,7 +45,7 @@ const Error404 = () => {
         </form>
 
         <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-          <Button onClick={() => navigate('/app')} variant="primary" className="px-8">
+          <Button onClick={() => navigate('/')} variant="primary" className="px-8">
             Return Home
           </Button>
           <Button onClick={() => navigate('/app/contact')} variant="outline" className="px-8">

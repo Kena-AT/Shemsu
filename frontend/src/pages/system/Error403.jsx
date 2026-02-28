@@ -28,7 +28,7 @@ const Error403 = () => {
 
         <div className="pt-6 grid grid-cols-2 gap-3">
           <Button 
-            onClick={() => navigate('/app')}
+            onClick={() => navigate('/')}
             variant="primary"
             className="flex items-center justify-center gap-2"
           >

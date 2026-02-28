@@ -10,6 +10,8 @@ frontend/dist/
 frontend/.env
 frontend/*.log
 frontend/.dev.vars
+frontend/playwright-report/
+frontend/test-results/
 
 # General
 .DS_Store
@@ -20,3 +22,13 @@ dist/
 *.local
 .vscode/
 .idea/
+
+# Microsoft Word temp files
+~$*.docx
+~$*.xlsx
+
+# Non-code project files (reference material)
+Designs/
+Pics/
+temp_docx_content/
+*.docx

@@ -1,7 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LifeBuoy, FileText, Shield, UserCheck, AlertCircle, Scale, Clock } from 'lucide-react';
 
 const TermsOfService = () => {
+  const navigate = useNavigate();
+
   const sections = [
     { title: "Acceptance of Terms", id: "acceptance", icon: LifeBuoy },
     { title: "Account Registration", id: "registration", icon: UserCheck },
@@ -121,8 +124,8 @@ const TermsOfService = () => {
                         <h4 className="text-lg font-bold text-slate-900 mb-2">Still have questions?</h4>
                         <p className="text-slate-400 text-sm mb-8 px-10">Our legal and support teams are here to help you understand your rights.</p>
                         <div className="flex justify-center gap-3">
-                            <button className="bg-blue-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-blue-700 transition-colors text-sm">Contact Support</button>
-                            <button className="bg-white border border-slate-200 text-slate-900 font-bold px-8 py-3 rounded-xl hover:bg-slate-50 transition-colors text-sm">Privacy Policy</button>
+                            <button className="bg-blue-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-blue-700 transition-colors text-sm" onClick={() => navigate("/contact")}>Contact Support</button>
+                            <button className="bg-white border border-slate-200 text-slate-900 font-bold px-8 py-3 rounded-xl hover:bg-slate-50 transition-colors text-sm" onClick={() => navigate("/privacy")}>Privacy Policy</button>
                         </div>
                     </div>
                 </div>

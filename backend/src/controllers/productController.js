@@ -34,7 +34,9 @@ exports.getProducts = async (req, res) => {
       },
       seller: {
         fullName: users.fullName
-      }
+      },
+      rating: sql`(SELECT coalesce(avg(rating), 0)::numeric(10,1) FROM reviews WHERE product_id = products.id)`,
+      reviewCount: sql`(SELECT count(id)::integer FROM reviews WHERE product_id = products.id)`
     })
     .from(products)
     .innerJoin(users, eq(products.sellerId, users.id))

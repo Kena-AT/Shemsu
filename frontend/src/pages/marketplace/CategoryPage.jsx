@@ -207,9 +207,9 @@ const CategoryPage = () => {
                     </div>
                     <div className="flex items-center gap-1 mb-1">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-2.5 h-2.5 ${i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-slate-200'}`} />
+                        <Star key={i} className={`w-2.5 h-2.5 ${i < Math.round(Number(p.rating || 0)) ? 'fill-yellow-400 text-yellow-400' : 'text-slate-200'}`} />
                       ))}
-                      <span className="text-[10px] text-slate-400 ml-1">(1.2k)</span>
+                      <span className="text-[10px] text-slate-400 ml-1">({p.reviewCount || 0})</span>
                     </div>
                     <h3 className="font-bold text-lg mb-1 group-hover:text-blue-600 transition-colors line-clamp-1">{p.name}</h3>
                     <p className="text-xs text-slate-500 mb-3 line-clamp-1">{p.description || 'Premium quality guaranteed.'}</p>

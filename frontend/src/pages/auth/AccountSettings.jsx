@@ -1,11 +1,14 @@
-import { User, Mail, Bell, Shield, Key, CreditCard, ChevronRight, Save, Camera, Smartphone } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, Mail, Bell, Shield, Key, CreditCard, ChevronRight, Save, Camera, Smartphone, Sun, Moon } from 'lucide-react';
 import { useAuthStore } from '../../state/useAuthStore';
+import { useThemeStore } from '../../state/useThemeStore';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import toast from 'react-hot-toast';
 
 const AccountSettings = () => {
   const { user } = useAuthStore();
+  const { theme, toggleTheme } = useThemeStore();
   const [activeTab, setActiveTab] = useState('profile');
 
   const tabs = [
@@ -51,7 +54,7 @@ const AccountSettings = () => {
                             </button>
                         </div>
                         <div>
-                            <h3 className="font-bold text-slate-900 text-lg">{user?.name || 'User'}</h3>
+                            <h3 className="font-bold text-slate-900 text-lg">{user?.fullName || 'User'}</h3>
                             <p className="text-sm text-slate-400 capitalize">{user?.role} Account</p>
                             <div className="flex items-center gap-2 mt-2 px-3 py-1 bg-green-50 text-green-600 rounded-full text-[10px] font-bold uppercase tracking-widest w-fit">
                                 <Shield size={12} /> Verified Member
@@ -62,7 +65,7 @@ const AccountSettings = () => {
                     <form className="grid md:grid-cols-2 gap-8">
                          <Input 
                             label="FULL NAME" 
-                            defaultValue={user?.name} 
+                            defaultValue={user?.fullName} 
                             className="rounded-2xl bg-slate-50 border-slate-100 py-4 font-bold"
                             labelClassName="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1"
                          />
@@ -86,6 +89,25 @@ const AccountSettings = () => {
                             labelClassName="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1"
                          />
                     </form>
+
+                    <div className="pt-8 border-t border-slate-50 flex items-center justify-between">
+                        <div>
+                            <h4 className="font-bold text-slate-900">App Theme</h4>
+                            <p className="text-sm text-slate-500">Toggle between Light and Dark mode</p>
+                        </div>
+                        <button 
+                            type="button"
+                            onClick={toggleTheme}
+                            className="w-14 h-8 bg-slate-200 rounded-full relative p-1 transition-colors duration-300"
+                            style={{ backgroundColor: theme === 'dark' ? '#2563eb' : '#e2e8f0' }}
+                        >
+                            <div 
+                                className={`w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-sm transition-transform duration-300 ${theme === 'dark' ? 'translate-x-6' : 'translate-x-0'}`}
+                            >
+                                {theme === 'dark' ? <Moon size={14} className="text-blue-600" /> : <Sun size={14} className="text-amber-500" />}
+                            </div>
+                        </button>
+                    </div>
 
                     <div className="pt-8 flex justify-end gap-3 border-t border-slate-50">
                         <Button variant="outline" className="px-8 rounded-xl font-bold">Discard</Button>

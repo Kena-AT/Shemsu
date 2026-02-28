@@ -190,11 +190,11 @@ const SearchResults = () => {
                     <div className={`flex flex-col ${viewMode === 'list' ? 'flex-1 py-4' : 'p-5'}`}>
                       <div className="flex items-center gap-2 mb-3">
                         <div className="flex items-center gap-0.5">
-                          <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                          <span className="text-sm font-bold ml-1">4.9</span>
+                          <Star className={`w-3.5 h-3.5 ${p.rating > 0 ? 'fill-yellow-400 text-yellow-400' : 'text-slate-200'}`} />
+                          <span className="text-sm font-bold ml-1">{Number(p.rating || 0).toFixed(1)}</span>
                         </div>
                         <span className="text-xs text-slate-300">|</span>
-                        <span className="text-xs text-slate-400 font-medium">1.2k sold</span>
+                        <span className="text-xs text-slate-400 font-medium">{p.reviewCount || 0} reviews</span>
                       </div>
                       
                       <h3 className="font-bold text-lg mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">{p.name}</h3>

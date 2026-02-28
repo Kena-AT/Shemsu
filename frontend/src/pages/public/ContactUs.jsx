@@ -47,8 +47,6 @@ const ContactUs = () => {
                             <option>Select a topic</option>
                             <option>Order Support</option>
                             <option>Seller Verification</option>
-                            <option>Business Partnership</option>
-                            <option>Other</option>
                         </select>
                     </div>
                     <div className="space-y-2">

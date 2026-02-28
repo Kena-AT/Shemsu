@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { Menu, X } from 'lucide-react';
 import { ReactQueryProvider } from './lib/react-query.jsx';
 import { useAuthStore } from './state/useAuthStore';
+import { useThemeStore } from './state/useThemeStore';
 import { cn } from './lib/utils';
 import api from './services/api';
 
@@ -15,6 +16,7 @@ import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import Unauthorized from './pages/auth/Unauthorized';
 import AccountSettings from './pages/auth/AccountSettings';
+import ProfilePage from './pages/auth/ProfilePage';
 import LogoutPage from './pages/auth/LogoutPage';
 
 // Marketplace Pages
@@ -37,6 +39,9 @@ import ManageOrders from './pages/dashboard/seller/ManageOrders';
 import SellerAnalytics from './pages/dashboard/seller/SellerAnalytics';
 import SellerVerificationPage from './pages/dashboard/seller/SellerVerificationPage';
 import SellerBankDetails from './pages/dashboard/seller/SellerBankDetails';
+import SellerProfile from './pages/dashboard/seller/SellerProfile';
+import SellerSettings from './pages/dashboard/seller/SellerSettings';
+import SellerSupport from './pages/dashboard/seller/SellerSupport';
 
 // Admin Dashboard Pages
 import AdminLoginPage from './pages/dashboard/admin/AdminLoginPage';
@@ -118,6 +123,15 @@ const SellerLayout = () => {
 function App() {
   console.log("App Component: Rendering...");
   const { setUser, setLoading } = useAuthStore();
+  const { theme } = useThemeStore();
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -156,7 +170,8 @@ function App() {
               <Route path="checkout/success" element={<ProtectedRoute allowedRoles={['buyer']}><PaymentSuccessPage /></ProtectedRoute>} />
               <Route path="checkout/error" element={<ProtectedRoute allowedRoles={['buyer']}><PaymentFailedPage /></ProtectedRoute>} />
               <Route path="orders" element={<ProtectedRoute allowedRoles={['buyer']}><OrderHistory /></ProtectedRoute>} />
-              <Route path="profile" element={<ProtectedRoute allowedRoles={['buyer', 'seller', 'admin']}><AccountSettings /></ProtectedRoute>} />
+              <Route path="profile" element={<ProtectedRoute allowedRoles={['buyer', 'seller', 'admin']}><ProfilePage /></ProtectedRoute>} />
+              <Route path="settings" element={<ProtectedRoute allowedRoles={['buyer', 'seller', 'admin']}><AccountSettings /></ProtectedRoute>} />
               
               {/* Public/Legal Routes under /app for nested footer/nav if preferred, but usually they are standalone */}
               <Route path="contact" element={<ContactUs />} />
@@ -196,16 +211,19 @@ function App() {
               <Route path="profile" element={<AdminProfile />} />
             </Route>
 
-            {/* Protected Seller Routes */}
+            {/* Seller Routes */}
             <Route path="/seller" element={<ProtectedRoute allowedRoles={['seller']}><SellerLayout /></ProtectedRoute>}>
               <Route index element={<SellerDashboard />} />
               <Route path="products" element={<ProductList />} />
-              <Route path="products/new" element={<AddEditProduct />} />
+              <Route path="products/add" element={<AddEditProduct />} />
               <Route path="products/edit/:id" element={<AddEditProduct />} />
               <Route path="orders" element={<ManageOrders />} />
               <Route path="analytics" element={<SellerAnalytics />} />
               <Route path="verify" element={<SellerVerificationPage />} />
-              <Route path="finance" element={<SellerBankDetails />} />
+              <Route path="finances" element={<SellerBankDetails />} />
+              <Route path="profile" element={<SellerProfile />} />
+              <Route path="settings" element={<SellerSettings />} />
+              <Route path="support" element={<SellerSupport />} />
             </Route>
 
             {/* Error Pages */}

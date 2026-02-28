@@ -46,9 +46,7 @@ const Navbar = () => {
           </button>
           
           <Link to="/app" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold group-hover:bg-blue-700 transition-colors">
-              <Rocket className="w-5 h-5 text-white" />
-            </div>
+            <img src="/logo.png" alt="Shemsu Logo" className="h-8 w-auto mix-blend-multiply" />
             <span className="text-xl font-bold tracking-tight text-slate-900">Shemsu</span>
           </Link>
         </div>
@@ -91,8 +89,8 @@ const Navbar = () => {
               <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white">
                 <User className="w-4 h-4" />
               </div>
-              <span className="text-sm font-medium text-slate-700 pr-2 hidden sm:block">
-                {user.role === 'seller' ? 'Hub' : 'Account'}
+              <span className="text-sm font-bold text-slate-700 pr-2 hidden sm:block">
+                {user.role === 'seller' ? 'Hub' : (user?.fullName?.split(' ')[0] || 'User')}
               </span>
             </div>
           ) : (

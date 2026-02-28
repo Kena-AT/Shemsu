@@ -221,9 +221,9 @@ const ProductListing = () => {
                       </div>
                       <div className="flex-1 flex flex-col">
                         <div className="flex items-center gap-1 mb-1">
-                          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                          <span className="text-xs font-medium">4.8</span>
-                          <span className="text-xs text-slate-400">(210)</span>
+                          <Star className={`w-3 h-3 ${product.rating > 0 ? 'fill-yellow-400 text-yellow-400' : 'text-slate-200'}`} />
+                          <span className="text-xs font-medium">{Number(product.rating || 0).toFixed(1)}</span>
+                          <span className="text-xs text-slate-400">({product.reviewCount || 0})</span>
                         </div>
                         <h3 className="font-semibold text-sm mb-1 group-hover:text-blue-600 transition-colors line-clamp-2">{product.name}</h3>
                         <p className="text-xs text-slate-400 mb-2">by {product.vendorName || 'Global Vendor'}</p>

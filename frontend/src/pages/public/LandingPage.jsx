@@ -13,9 +13,7 @@ const LandingPage = () => {
       {/* Navbar (Static version for Landing) */}
       <nav className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold">
-            <Rocket size={20} />
-          </div>
+          <img src="/logo.png" alt="Shemsu Logo" className="h-9 w-auto mix-blend-multiply" />
           <span className="text-xl font-black tracking-tight text-slate-900 uppercase">Shemsu</span>
         </div>
         <div className="flex items-center gap-4">
@@ -44,7 +42,7 @@ const LandingPage = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <Button 
-                  onClick={() => navigate('/app')} 
+                  onClick={() => navigate('/login')} 
                   className="rounded-2xl px-8 py-4 bg-slate-900 text-white font-bold flex items-center justify-center gap-2 group"
                 >
                   Start Shopping <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
@@ -92,11 +90,11 @@ const LandingPage = () => {
           <h2 className="text-3xl font-bold text-slate-900 mb-4">Why Choose Shemsu?</h2>
           <p className="text-slate-500">We've built a foundation of trust to ensure that every interaction on our platform is safe, transparent, and efficient.</p>
         </div>
-        <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-3 gap-8">
+        <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-2 gap-8">
             {[
                 { icon: ShieldCheck, title: "Secure Payments", desc: "Your transactions are protected by industry-leading encryption and advanced fraud prevention protocols." },
                 { icon: Star, title: "Verified Merchants", desc: "Every seller undergoes a rigorous multi-step verification process to ensure quality and authenticity." },
-                { icon: ShoppingBag, title: "Order Tracking", desc: "Real-time updates from checkout to doorstep, so you always know exactly where your items are located." }
+               
             ].map((feature, i) => (
                 <div key={i} className="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                     <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
@@ -108,13 +106,6 @@ const LandingPage = () => {
             ))}
         </div>
       </section>
-
-      {/* Trust Badges */}
-      <div className="py-12 border-y border-slate-100 flex items-center justify-center gap-12 opacity-30 grayscale hover:grayscale-0 transition-all overflow-x-auto px-6 no-scrollbar">
-         {['PCI-DSS', 'SSL SECURE', 'TRUST-E', 'FINCEN', 'GDPR'].map(badge => (
-             <span key={badge} className="text-xs font-black tracking-widest text-slate-900 shrink-0">{badge}</span>
-         ))}
-      </div>
 
       <Footer />
     </div>

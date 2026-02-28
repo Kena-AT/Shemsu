@@ -49,9 +49,7 @@ const AdminSidebar = ({ onNavigate }) => {
     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-full z-20 overflow-hidden font-sans">
       <div className="p-6 border-b border-slate-100 bg-white">
         <Link to="/admin" className="flex items-center gap-3" onClick={onNavigate}>
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-md">
-            <Shield className="w-5 h-5" />
-          </div>
+          <img src="/logo.png" alt="Shemsu Logo" className="h-8 w-auto mix-blend-multiply" />
           <div className="flex flex-col">
             <span className="text-lg font-bold tracking-tight text-slate-900 leading-none">Shemsu</span>
             <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">Admin Console</span>

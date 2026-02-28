@@ -39,9 +39,7 @@ const Documentation = () => {
       {/* Header */}
       <nav className="h-16 border-b border-slate-100 px-6 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md z-50">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white">
-            <Rocket size={18} />
-          </div>
+          <img src="/logo.png" alt="Shemsu Logo" className="h-8 w-auto mix-blend-multiply" />
           <span className="font-bold text-slate-900 tracking-tight">Shemsu <span className="text-slate-400 font-medium">Docs</span></span>
         </div>
         
@@ -171,27 +169,7 @@ export type Vendor = z.infer<typeof VendorSchema>;`}</code>
   );
 };
 
-function Rocket(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-      <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-      <path d="M9 12H4s.55-3.03 2-4.5c1.11-1.11 3.5-.5 3.5-.5" />
-      <path d="M12 15v5s3.03-.55 4.5-2c1.11-1.11.5-3.5.5-3.5" />
-    </svg>
-  )
-}
+
 
 function Search(props) {
   return (

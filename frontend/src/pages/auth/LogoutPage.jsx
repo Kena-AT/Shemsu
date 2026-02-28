@@ -33,8 +33,8 @@ const LogoutPage = () => {
 
          <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100 flex items-center justify-between mb-8 group">
             <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Rocket size={18} className="text-blue-600" />
+                <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform p-1">
+                    <img src="/logo.png" alt="Shemsu Logo" className="w-full h-auto mix-blend-multiply" />
                 </div>
                 <div className="text-left">
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Return to</p>
@@ -55,9 +55,7 @@ const LogoutPage = () => {
       </div>
 
       <div className="fixed bottom-12 flex items-center gap-2 opacity-20 hover:opacity-100 transition-opacity">
-        <div className="w-6 h-6 bg-slate-900 rounded-md flex items-center justify-center text-white">
-            <Rocket size={12} />
-        </div>
+        <img src="/logo.png" alt="Shemsu Logo" className="h-6 w-auto mix-blend-multiply opacity-50" />
         <span className="text-sm font-black text-slate-900 tracking-widest uppercase">Shemsu</span>
       </div>
     </div>

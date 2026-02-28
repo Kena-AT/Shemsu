@@ -8,8 +8,10 @@ import {
   HelpCircle,
   Rocket,
   ShieldAlert,
+
   ShieldCheck,
-  Clock
+  Clock,
+  Store
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../state/useAuthStore';
@@ -33,6 +35,7 @@ const SellerSidebar = ({ activeNav, onNavigate }) => {
   ];
 
   const bottomItems = [
+    { to: '/seller/profile', label: 'Store Profile', icon: Store, locked: !isApproved },
     { to: '/seller/settings', label: 'Settings', icon: Settings, locked: !isApproved },
     { to: '/seller/support', label: 'Support', icon: HelpCircle },
   ];
@@ -50,9 +53,7 @@ const SellerSidebar = ({ activeNav, onNavigate }) => {
     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-full">
       <div className="p-6 border-b border-slate-100">
         <Link to="/seller" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
-            <Rocket className="w-4 h-4" />
-          </div>
+          <img src="/logo.png" alt="Shemsu Logo" className="h-8 w-auto mix-blend-multiply" />
           <div className="flex flex-col">
             <span className="text-lg font-bold tracking-tight text-slate-900 leading-none">Shemsu</span>
             <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Seller Portal</span>
