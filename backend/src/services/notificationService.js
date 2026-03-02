@@ -1,20 +1,14 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const logger = require('../config/logger');
 
 class NotificationService {
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // STARTTLS — required for port 587
-      auth: {
-        user: process.env.SMTP_EMAIL,
-        pass: process.env.SMTP_PASSWORD,
-      },
-      tls: {
-        rejectUnauthorized: false, // Needed on some cloud platforms
-      },
-    });
+    this.resend = new Resend(process.env.RESEND_API_KEY);
+    this.fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+
+    this.queue = [];
+    this.isProcessing = false;
+    this.maxRetries = 3;
 
     this.queue = [];
     this.isProcessing = false;
@@ -59,13 +53,18 @@ class NotificationService {
       const currentJob = this.queue.shift();
 
       try {
-        await this.transporter.sendMail({
-          from: `"Shemsu" <${process.env.SMTP_EMAIL}>`,
+        const { data, error } = await this.resend.emails.send({
+          from: `Shemsu <${this.fromEmail}>`,
           to: currentJob.to,
           subject: currentJob.subject,
           html: currentJob.html,
         });
-        logger.info(`Email delivered: [${currentJob.templateName}] to ${currentJob.to}`);
+        
+        if (error) {
+          throw new Error(error.message);
+        }
+        
+        logger.info(`Email delivered: [${currentJob.templateName}] to ${currentJob.to} (ID: ${data.id})`);
       } catch (error) {
         currentJob.retries++;
         if (currentJob.retries < this.maxRetries) {
@@ -141,8 +140,8 @@ class NotificationService {
         <p style="font-size: 14px; color: #64748b;">Reply directly to this email to contact the user.</p>
       </div>
     `;
-    // Send to platform admin
-    await this.enqueueEmail(process.env.SMTP_EMAIL, `Inquiry: ${formData.subject}`, html, 'contact_form');
+    // Send to platform admin. Note: Free Resend can only send TO verified domains or the registered email.
+    await this.enqueueEmail(this.fromEmail, `Inquiry: ${formData.subject}`, html, 'contact_form');
   }
 
   /**
