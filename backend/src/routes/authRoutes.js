@@ -31,6 +31,7 @@ const { authenticate } = require('../middleware/auth');
 router.post('/register', validate(registerSchema), authController.register);
 router.post('/login', authLimiter, validate(loginSchema), authController.login);
 router.post('/verify-email', authLimiter, validate(verifyEmailSchema), authController.verifyEmail);
+router.post('/resend-verification', authLimiter, validate(forgotPasswordSchema), authController.resendVerification);
 router.post('/forgot-password', authLimiter, validate(forgotPasswordSchema), authController.forgotPassword);
 router.post('/reset-password', authLimiter, validate(resetPasswordSchema), authController.resetPassword);
 router.post('/contact', validate(contactFormSchema), authController.submitContactForm);

@@ -7,10 +7,18 @@ import Button from '../../components/common/Button';
 
 const VerifyEmail = () => {
   const [code, setCode] = useState(['', '', '', '', '', '']);
-  const { verifyEmail } = useAuth();
+  const [timeLeft, setTimeLeft] = useState(60);
+  const { verifyEmail, resendVerification } = useAuth();
   const location = useLocation();
   const email = location.state?.email || '';
   const inputRefs = useRef([]);
+
+  React.useEffect(() => {
+    if (timeLeft > 0) {
+      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [timeLeft]);
 
   const handleChange = (index, value) => {
     if (isNaN(value)) return;
@@ -32,6 +40,17 @@ const VerifyEmail = () => {
     verifyEmail.mutate({ email, code: fullCode }, {
       onSuccess: () => toast.success('Email verified successfully!'),
       onError: (err) => toast.error(err.response?.data?.message || 'Verification failed'),
+    });
+  };
+
+  const handleResend = () => {
+    if (timeLeft > 0) return;
+    resendVerification.mutate({ email }, {
+      onSuccess: () => {
+        toast.success('Verification code resent successfully!');
+        setTimeLeft(60);
+      },
+      onError: (err) => toast.error(err.response?.data?.message || 'Failed to resend code'),
     });
   };
 
@@ -71,7 +90,18 @@ const VerifyEmail = () => {
         <div className="mt-8 space-y-4">
           <p className="text-sm text-gray-500">
             Didn't receive the email?{' '}
-            <button type="button" className="text-blue-600 font-semibold hover:underline">Resend Code</button>
+            {timeLeft > 0 ? (
+              <span className="text-gray-400 font-semibold">Resend in {timeLeft}s</span>
+            ) : (
+              <button 
+                type="button" 
+                onClick={handleResend}
+                disabled={resendVerification.isPending}
+                className="text-blue-600 font-semibold hover:underline disabled:opacity-50"
+              >
+                {resendVerification.isPending ? 'Sending...' : 'Resend Code'}
+              </button>
+            )}
           </p>
           <Link to="/signup" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors">
             <ArrowLeft size={16} /> Change email address

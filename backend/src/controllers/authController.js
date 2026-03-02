@@ -132,6 +132,44 @@ exports.verifyEmail = async (req, res, next) => {
   }
 };
 
+// Resend Verification Email
+exports.resendVerification = async (req, res, next) => {
+  try {
+    let { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+    email = email.toLowerCase();
+
+    const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'User is already verified' });
+    }
+
+    // Generate new code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await db.update(users)
+      .set({ 
+        verificationCode,
+        verificationCodeExpiresAt: expiresAt,
+        verificationAttempts: 0 
+      })
+      .where(eq(users.id, user.id));
+
+    await sendVerificationEmail(email, verificationCode);
+
+    res.status(200).json({ message: 'Verification code resent successfully' });
+  } catch (error) {
+    logger.error(`Resend verification error: ${error.message}`);
+    next(error);
+  }
+};
+
 // Login
 exports.login = async (req, res, next) => {
   try {

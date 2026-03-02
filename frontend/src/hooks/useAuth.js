@@ -42,6 +42,11 @@ export const useAuth = () => {
     },
   });
 
+  // Resend Verification
+  const resendVerificationMutation = useMutation({
+    mutationFn: (data) => api.post('/auth/resend-verification', data),
+  });
+
   // Forgot Password
   const forgotPasswordMutation = useMutation({
     mutationFn: (data) => api.post('/auth/forgot-password', data),
@@ -73,6 +78,7 @@ export const useAuth = () => {
     login: loginMutation,
     adminLogin: adminLoginMutation,
     verifyEmail: verifyEmailMutation,
+    resendVerification: resendVerificationMutation,
     forgotPassword: forgotPasswordMutation,
     resetPassword: resetPasswordMutation,
   };
