@@ -4,18 +4,16 @@ const logger = require('../config/logger');
 class NotificationService {
   constructor() {
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.googlemail.com',
-      port: 465,
-      secure: true, // Use SSL/TLS
+      host: 'smtp-relay.brevo.com',
+      port: 587,
+      secure: false, // Use STARTTLS
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: process.env.BREVO_SMTP_USER,
+        pass: process.env.BREVO_SMTP_KEY,
       },
-      // Force IPv4 as Render often fails to connect via IPv6 to Gmail
-      family: 4,
     });
 
-    this.fromEmail = process.env.EMAIL_USER || 'kenakaye11@gmail.com';
+    this.fromEmail = process.env.BREVO_FROM_EMAIL || 'kenakaye11@gmail.com';
     this.queue = [];
     this.isProcessing = false;
     this.maxRetries = 3;
