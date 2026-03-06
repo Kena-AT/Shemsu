@@ -1,18 +1,7 @@
-const nodemailer = require('nodemailer');
 const logger = require('../config/logger');
 
 class NotificationService {
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: 'smtp-relay.brevo.com',
-      port: 2525,
-      secure: false, // Use STARTTLS
-      auth: {
-        user: process.env.BREVO_SMTP_USER,
-        pass: process.env.BREVO_SMTP_KEY,
-      },
-    });
-
     this.fromEmail = process.env.BREVO_FROM_EMAIL || 'kenakaye11@gmail.com';
     this.brevoApiUrl = 'https://api.brevo.com/v3/smtp/email';
     this.queue = [];
@@ -20,27 +9,46 @@ class NotificationService {
     this.maxRetries = 3;
 
     // Start background queue processor
-    this.processorInterval = setInterval(() => this.processQueue(), 60000); // Regular check every minute
+    this.processorInterval = setInterval(() => this.processQueue(), 60000);
     if (this.processorInterval.unref) this.processorInterval.unref();
+  }
+
+  /**
+   * Core delivery: Send email via Brevo HTTP API
+   */
+  async _deliverViaApi(to, subject, html) {
+    const response = await fetch(this.brevoApiUrl, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': process.env.BREVO_SMTP_KEY,
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: { name: 'Shemsu', email: this.fromEmail },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || `Brevo API error: ${response.status}`);
+    }
+
+    return data;
   }
 
   /**
    * Add email to the queue for delivery
    */
   async enqueueEmail(to, subject, html, templateName = 'generic') {
-    const job = {
-      to,
-      subject,
-      html,
-      templateName,
-      retries: 0,
-      createdAt: new Date(),
-    };
-
+    const job = { to, subject, html, templateName, retries: 0, createdAt: new Date() };
     this.queue.push(job);
     logger.info(`Email job queued [${templateName}] for ${to}`);
-    
-    // Trigger immediate processing attempt
+
     if (!this.isProcessing) {
       this.processQueue();
     }
@@ -53,20 +61,13 @@ class NotificationService {
     if (this.isProcessing || this.queue.length === 0) return;
 
     this.isProcessing = true;
-    
+
     while (this.queue.length > 0) {
       const currentJob = this.queue.shift();
 
       try {
-        const mailOptions = {
-          from: `"Shemsu" <${this.fromEmail}>`,
-          to: currentJob.to,
-          subject: currentJob.subject,
-          html: currentJob.html,
-        };
-
-        const info = await this.transporter.sendMail(mailOptions);
-        logger.info(`Email delivered: [${currentJob.templateName}] to ${currentJob.to} (ID: ${info.messageId})`);
+        const data = await this._deliverViaApi(currentJob.to, currentJob.subject, currentJob.html);
+        logger.info(`Email delivered: [${currentJob.templateName}] to ${currentJob.to} (ID: ${data.messageId})`);
       } catch (error) {
         currentJob.retries++;
         if (currentJob.retries < this.maxRetries) {
@@ -76,12 +77,25 @@ class NotificationService {
           logger.error(`Final email failure after ${this.maxRetries} attempts: [${currentJob.templateName}] to ${currentJob.to}. Error: ${error.message}`);
         }
       }
-      
-      // Small delay between sends
+
       await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     this.isProcessing = false;
+  }
+
+  /**
+   * Public: Send email via Brevo HTTP API (for direct/diagnostic use)
+   */
+  async sendEmailViaApi(to, subject, html) {
+    try {
+      const data = await this._deliverViaApi(to, subject, html);
+      logger.info(`Email delivered via HTTP API to ${to} (ID: ${data.messageId})`);
+      return data;
+    } catch (error) {
+      logger.error(`Brevo API delivery failed: ${error.message}`);
+      throw error;
+    }
   }
 
   /**
@@ -141,7 +155,6 @@ class NotificationService {
         <p style="font-size: 14px; color: #64748b;">Reply directly to this email to contact the user.</p>
       </div>
     `;
-    // Send to platform admin. Note: Free Resend can only send TO verified domains or the registered email.
     await this.enqueueEmail(this.fromEmail, `Inquiry: ${formData.subject}`, html, 'contact_form');
   }
 
@@ -161,40 +174,6 @@ class NotificationService {
       </div>
     `;
     await this.enqueueEmail(to, 'Reset your Shemsu password', html, 'password_reset');
-  }
-
-  /**
-   * Fail-safe: Send email via Brevo HTTP API
-   */
-  async sendEmailViaApi(to, subject, html) {
-    try {
-      const response = await fetch(this.brevoApiUrl, {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'api-key': process.env.BREVO_SMTP_KEY,
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          sender: { name: 'Shemsu', email: this.fromEmail },
-          to: [{ email: to }],
-          subject: subject,
-          htmlContent: html
-        })
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'API delivery failed');
-      }
-
-      logger.info(`Email delivered via HTTP API to ${to} (ID: ${data.messageId})`);
-      return data;
-    } catch (error) {
-      logger.error(`Brevo API fallback failed: ${error.message}`);
-      throw error;
-    }
   }
 }
 
