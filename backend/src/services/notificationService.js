@@ -1,15 +1,17 @@
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 const logger = require('../config/logger');
 
 class NotificationService {
   constructor() {
-    this.resend = new Resend(process.env.RESEND_API_KEY);
-    this.fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+    this.transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
-    this.queue = [];
-    this.isProcessing = false;
-    this.maxRetries = 3;
-
+    this.fromEmail = process.env.EMAIL_USER || 'kenakaye11@gmail.com';
     this.queue = [];
     this.isProcessing = false;
     this.maxRetries = 3;
@@ -53,31 +55,27 @@ class NotificationService {
       const currentJob = this.queue.shift();
 
       try {
-        const { data, error } = await this.resend.emails.send({
-          from: `Shemsu <${this.fromEmail}>`,
+        const mailOptions = {
+          from: `"Shemsu" <${this.fromEmail}>`,
           to: currentJob.to,
           subject: currentJob.subject,
           html: currentJob.html,
-        });
-        
-        if (error) {
-          throw new Error(error.message);
-        }
-        
-        logger.info(`Email delivered: [${currentJob.templateName}] to ${currentJob.to} (ID: ${data.id})`);
+        };
+
+        const info = await this.transporter.sendMail(mailOptions);
+        logger.info(`Email delivered: [${currentJob.templateName}] to ${currentJob.to} (ID: ${info.messageId})`);
       } catch (error) {
         currentJob.retries++;
         if (currentJob.retries < this.maxRetries) {
           logger.warn(`Email delivery failed (Retry ${currentJob.retries}/3): ${error.message}`);
-          // Exponential backoff strategy: Put it back at the end of the queue
           this.queue.push(currentJob);
         } else {
           logger.error(`Final email failure after ${this.maxRetries} attempts: [${currentJob.templateName}] to ${currentJob.to}. Error: ${error.message}`);
         }
       }
       
-      // Small delay between sends to avoid rate limits
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Small delay between sends
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     this.isProcessing = false;

@@ -127,8 +127,8 @@ const Signup = () => {
 
         <div className="relative z-10 flex items-center gap-6 text-[11px] font-medium text-blue-200">
           <span>© 2026 K.A.Y.E INC.</span>
-          <span className="uppercase tracking-wider">Privacy</span>
-          <span className="uppercase tracking-wider">Terms</span>
+          <Link to="/app/privacy" className="uppercase tracking-wider hover:text-white transition-colors">Privacy</Link>
+          <Link to="/app/terms" className="uppercase tracking-wider hover:text-white transition-colors">Terms</Link>
         </div>
       </div>
 
@@ -239,9 +239,9 @@ const Signup = () => {
               />
               <label htmlFor="terms" className="text-xs text-gray-500 leading-relaxed">
                 I agree to the{' '}
-                <a href="#" className="text-blue-600 hover:underline font-medium">Terms of Service</a>
+                <Link to="/app/terms" className="text-blue-600 hover:underline font-medium">Terms of Service</Link>
                 {' '}and{' '}
-                <a href="#" className="text-blue-600 hover:underline font-medium">Privacy Policy</a>.
+                <Link to="/app/privacy" className="text-blue-600 hover:underline font-medium">Privacy Policy</Link>.
               </label>
             </div>
 
