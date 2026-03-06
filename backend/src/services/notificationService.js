@@ -4,11 +4,15 @@ const logger = require('../config/logger');
 class NotificationService {
   constructor() {
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // Use STARTTLS
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
+      // Force IPv4 as Render often fails to connect via IPv6 to Gmail
+      family: 4,
     });
 
     this.fromEmail = process.env.EMAIL_USER || 'kenakaye11@gmail.com';
