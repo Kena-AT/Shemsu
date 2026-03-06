@@ -21,7 +21,7 @@ class NotificationService {
       method: 'POST',
       headers: {
         'accept': 'application/json',
-        'api-key': process.env.BREVO_SMTP_KEY,
+        'api-key': process.env.BREVO_API_KEY,
         'content-type': 'application/json'
       },
       body: JSON.stringify({
