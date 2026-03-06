@@ -28,6 +28,8 @@ const authLimiter = rateLimit({
 // Routes
 const { authenticate } = require('../middleware/auth');
 
+router.get('/check', (req, res) => res.json({ message: 'Auth router is working' }));
+
 router.post('/register', validate(registerSchema), authController.register);
 router.post('/login', authLimiter, validate(loginSchema), authController.login);
 router.post('/verify-email', authLimiter, validate(verifyEmailSchema), authController.verifyEmail);
@@ -37,5 +39,7 @@ router.post('/reset-password', authLimiter, validate(resetPasswordSchema), authC
 router.post('/contact', validate(contactFormSchema), authController.submitContactForm);
 router.post('/refresh', authController.refresh);
 router.get('/me', authenticate, authController.getMe);
+
+router.post('/test-email-api', authController.testEmailApi);
 
 module.exports = router;

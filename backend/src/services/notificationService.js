@@ -5,7 +5,7 @@ class NotificationService {
   constructor() {
     this.transporter = nodemailer.createTransport({
       host: 'smtp-relay.brevo.com',
-      port: 587,
+      port: 2525,
       secure: false, // Use STARTTLS
       auth: {
         user: process.env.BREVO_SMTP_USER,
@@ -14,6 +14,7 @@ class NotificationService {
     });
 
     this.fromEmail = process.env.BREVO_FROM_EMAIL || 'kenakaye11@gmail.com';
+    this.brevoApiUrl = 'https://api.brevo.com/v3/smtp/email';
     this.queue = [];
     this.isProcessing = false;
     this.maxRetries = 3;
@@ -160,6 +161,40 @@ class NotificationService {
       </div>
     `;
     await this.enqueueEmail(to, 'Reset your Shemsu password', html, 'password_reset');
+  }
+
+  /**
+   * Fail-safe: Send email via Brevo HTTP API
+   */
+  async sendEmailViaApi(to, subject, html) {
+    try {
+      const response = await fetch(this.brevoApiUrl, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': process.env.BREVO_SMTP_KEY,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: 'Shemsu', email: this.fromEmail },
+          to: [{ email: to }],
+          subject: subject,
+          htmlContent: html
+        })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'API delivery failed');
+      }
+
+      logger.info(`Email delivered via HTTP API to ${to} (ID: ${data.messageId})`);
+      return data;
+    } catch (error) {
+      logger.error(`Brevo API fallback failed: ${error.message}`);
+      throw error;
+    }
   }
 }
 

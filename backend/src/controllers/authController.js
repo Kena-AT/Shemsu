@@ -356,3 +356,22 @@ exports.getMe = async (req, res, next) => {
     next(error);
   }
 };
+
+// Test Brevo HTTP API
+exports.testEmailApi = async (req, res, next) => {
+  try {
+    const { to } = req.body;
+    if (!to) return res.status(400).json({ message: 'Recipient email is required' });
+
+    await notificationService.sendEmailViaApi(
+      to, 
+      'Brevo API Test Message', 
+      '<h1>Success!</h1><p>If you see this, your Brevo HTTP API integration is working perfectly from Render.</p>'
+    );
+
+    res.status(200).json({ message: `Test email sent via HTTP API to ${to}` });
+  } catch (error) {
+    logger.error(`Test email API error: ${error.message}`);
+    res.status(500).json({ message: 'API delivery test failed', error: error.message });
+  }
+};
