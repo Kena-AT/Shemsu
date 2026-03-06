@@ -11,6 +11,7 @@ const Documentation = () => {
     { title: "Order Flow", icon: ShoppingBag },
     { title: "API Reference", icon: Code },
     { title: "CLI Tools", icon: Server },
+    { title: "Recent Updates", icon: Zap },
   ];
 
   function ShoppingBag(props) {
@@ -83,6 +84,16 @@ const Documentation = () => {
                                 {item.title}
                             </button>
                         ))}
+                    </nav>
+                </div>
+
+                <div>
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6">Changelog</h4>
+                    <nav className="space-y-1">
+                        <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                            <Zap size={16} />
+                            Recent Updates
+                        </button>
                     </nav>
                 </div>
             </div>
