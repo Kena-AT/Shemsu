@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Lock, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../hooks/useAuth';
 import Button from '../../components/common/Button';
@@ -9,6 +9,7 @@ import { loginSchema, validateWithZod } from '../../lib/validationSchemas';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const { login } = useAuth();
 
@@ -58,13 +59,22 @@ const Login = () => {
             <Input
               placeholder="••••••••"
               icon={Lock}
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={formData.password}
               error={errors?.password}
               onChange={(e) => { 
                 setFormData({ ...formData, password: e.target.value }); 
                 if (errors?.password) setErrors(p => { const n = {...p}; delete n.password; return n; });
               }}
+              rightElement={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              }
             />
           </div>
 

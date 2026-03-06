@@ -2,7 +2,7 @@ import React from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-const Input = ({ label, labelClassName, icon: Icon, error, className, ...props }) => {
+const Input = ({ label, labelClassName, icon: Icon, rightElement, error, className, ...props }) => {
   return (
     <div className="w-full space-y-2">
       {label && <label className={twMerge("block text-sm font-medium text-gray-700", labelClassName)}>{label}</label>}
@@ -16,6 +16,7 @@ const Input = ({ label, labelClassName, icon: Icon, error, className, ...props }
           className={twMerge(
             'w-full rounded-lg border py-3 transition-all outline-none placeholder:text-gray-400',
             Icon ? 'pl-10' : 'pl-4',
+            rightElement ? 'pr-10' : 'pr-4',
             error 
               ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100' 
               : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100',
@@ -23,6 +24,11 @@ const Input = ({ label, labelClassName, icon: Icon, error, className, ...props }
           )}
           {...props}
         />
+        {rightElement && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            {rightElement}
+          </div>
+        )}
       </div>
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
