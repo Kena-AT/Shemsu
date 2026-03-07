@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../hooks/useCart';
 import { useOrder } from '../../hooks/useOrder';
@@ -29,7 +29,9 @@ const CheckoutPage = () => {
     woreda: '',
     houseNo: '',
     phone: '',
-    additionalInfo: ''
+    additionalInfo: '',
+    lat: 9.03,
+    lng: 38.74
   });
 
   const [errors, setErrors] = useState({});

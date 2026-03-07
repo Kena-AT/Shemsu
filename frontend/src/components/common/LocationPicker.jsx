@@ -55,8 +55,8 @@ const LocationPicker = ({ initialPosition, onLocationSelect }) => {
       </MapContainer>
       <div className="bg-slate-50 p-2 text-[10px] text-slate-500 font-medium flex justify-between items-center px-4">
         <span>Click on the map to set location</span>
-        {position && (
-          <span>Lat: {position.lat.toFixed(4)}, Lng: {position.lng.toFixed(4)}</span>
+        {position?.lat != null && position?.lng != null && (
+          <span>Lat: {Number(position.lat).toFixed(4)}, Lng: {Number(position.lng).toFixed(4)}</span>
         )}
       </div>
     </div>

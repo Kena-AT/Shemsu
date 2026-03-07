@@ -8,7 +8,7 @@ export const PLATFORM_FEE_RATE = 0.02; // 2% Seller Fee
  * This is used for frontend estimation when full routing isn't available or necessary
  */
 export const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
+  if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return 0;
   
   const R = 6371; // Radius of the earth in km
   const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -44,7 +44,7 @@ export const calculateOrderSummary = (items, buyerLocation = null) => {
   }, {});
 
   let totalShipping = 0;
-  if (buyerLocation && buyerLocation.lat && buyerLocation.lng) {
+  if (buyerLocation && buyerLocation.lat != null && buyerLocation.lng != null) {
     Object.values(vendorGroups).forEach(vendor => {
       if (vendor.lat && vendor.lng) {
         const distance = calculateDistance(vendor.lat, vendor.lng, buyerLocation.lat, buyerLocation.lng);
