@@ -34,12 +34,16 @@ class OrderController {
       const { shippingAddress, cartId } = req.body;
       const userId = req.user.id;
 
-      // 1. Fetch Cart and Items
+      // 1. Fetch Cart and Items with Product + Seller details
       const cart = await db.query.carts.findFirst({
         where: eq(carts.userId, userId),
         with: {
           items: {
-            with: { product: true }
+            with: { 
+              product: {
+                with: { seller: true }
+              } 
+            }
           }
         }
       });
@@ -48,19 +52,61 @@ class OrderController {
         logger.warn('Checkout failed: Cart is empty or not found', { userId });
         return res.status(400).json({ message: 'Cart is empty' });
       }
-      logger.info('Fetched cart for checkout', { cartId: cart.id, itemCount: cart.items.length });
 
-      // 2. Calculate Total and Prepare Items Snapshots
-      let totalAmount = 0;
+      // Group items by seller for shipping calculation
+      const vendorGroups = cart.items.reduce((acc, item) => {
+        const sellerId = item.product.sellerId;
+        if (!acc[sellerId]) {
+          acc[sellerId] = {
+            seller: item.product.seller,
+            items: []
+          };
+        }
+        acc[sellerId].items.push(item);
+        return acc;
+      }, {});
+
+      // Calculate distance-based shipping for each vendor
+      let totalShippingAmount = 0;
+      const buyerLocation = { lat: shippingAddress.lat, lng: shippingAddress.lng };
+
+      if (!buyerLocation.lat || !buyerLocation.lng) {
+         // Fallback if no coords provided yet (should be caught by UI/Validation)
+         totalShippingAmount = 100; 
+      } else {
+        const locationService = require('../services/locationService');
+        for (const sellerId in vendorGroups) {
+          const seller = vendorGroups[sellerId].seller;
+          const origin = { lat: seller.latitude, lng: seller.longitude };
+          
+          if (origin.lat && origin.lng) {
+            const shipResult = await locationService.calculateShipping(origin, buyerLocation);
+            totalShippingAmount += shipResult.shippingFee;
+          } else {
+            totalShippingAmount += 100; // Base fee if seller has no location
+          }
+        }
+      }
+
+      // 2. Calculate Totals and Prepare Items Snapshots
+      let subtotal = 0;
+      const SERVICE_FEE_RATE = 0.02; // 2% Buyer Fee
+      const PLATFORM_FEE_RATE = 0.02; // 2% Seller Fee
+
       const itemsToCreate = cart.items.map(item => {
-        const itemTotal = parseFloat(item.priceSnapshot) * item.quantity;
-        totalAmount += itemTotal;
+        const itemSubtotal = parseFloat(item.priceSnapshot) * item.quantity;
+        subtotal += itemSubtotal;
+
+        const platformFee = itemSubtotal * PLATFORM_FEE_RATE;
+        const sellerNet = itemSubtotal - platformFee;
 
         return {
           sellerId: item.product.sellerId,
           productId: item.productId,
           quantity: item.quantity,
           priceAtPurchase: item.priceSnapshot,
+          platformFee: platformFee.toString(),
+          sellerNet: sellerNet.toString(),
           productNameSnapshot: item.product.name,
           productImageSnapshot: item.product.images?.[0]?.url || null,
           attributesSnapshot: item.attributes,
@@ -68,12 +114,18 @@ class OrderController {
         };
       });
 
+      const serviceFee = subtotal * SERVICE_FEE_RATE;
+      const totalAmount = subtotal + totalShippingAmount + serviceFee;
+
       // 3. Create Unique Transaction Reference
       const txRef = `ORD-${crypto.randomBytes(4).toString('hex').toUpperCase()}-${Date.now()}`;
 
       // 4. Create Order in Database (Transaction)
       const [newOrder] = await db.insert(orders).values({
         buyerId: userId,
+        subtotal: subtotal.toString(),
+        shippingAmount: totalShippingAmount.toString(),
+        serviceFee: serviceFee.toString(),
         totalAmount: totalAmount.toString(),
         currency: 'ETB',
         status: 'pending',
@@ -87,7 +139,7 @@ class OrderController {
         itemsToCreate.map(item => ({ ...item, orderId: newOrder.id }))
       );
 
-      // 6. Fetch full user details to handle missing token data
+      // 6. Fetch full user details
       const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
 
       if (!user) {
@@ -103,12 +155,11 @@ class OrderController {
         first_name: user.fullName.split(' ')[0],
         last_name: user.fullName.split(' ')[1] || '',
         tx_ref: txRef,
-        callback_url: `${process.env.BACKEND_URL}/api/orders/webhook`, // Your webhook URL
+        callback_url: `${process.env.BACKEND_URL}/api/orders/webhook`,
         return_url: `${process.env.FRONTEND_URL}/app/checkout/success?tx_ref=${txRef}`,
       });
 
       logger.info('Chapa payment initialized', { txRef, checkoutUrl: chapaData.checkout_url });
-
 
       res.status(201).json({
         message: 'Order created',

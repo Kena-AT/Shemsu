@@ -61,10 +61,10 @@ const AdminReports = () => {
   ];
 
   const metrics = [
-    { label: 'Total Revenue', value: formatPrice(stats?.totalRevenue || 0), change: '+12.5%', icon: TrendingUp, positive: true },
+    { label: 'Total Platform Revenue', value: formatPrice(stats?.totalRevenue || 0), change: '+12.5%', icon: TrendingUp, positive: true },
+    { label: 'Buyer Service Fees (2%)', value: formatPrice(stats?.buyerFees || 0), change: '+10.2%', icon: Zap, positive: true },
+    { label: 'Seller Platform Fees (2%)', value: formatPrice(stats?.sellerFees || 0), change: '+8.4%', icon: Percent, positive: true },
     { label: 'Active Users', value: formatNumber(stats?.totalUsers || 0), change: '+5.2%', icon: Users, positive: true },
-    { label: 'Total Sellers', value: formatNumber(stats?.totalSellers || 0), change: '+8.1%', icon: UserPlus, positive: true },
-    { label: 'Total Products', value: formatNumber(stats?.totalProducts || 0), change: '+2.4%', icon: Activity, positive: true },
   ];
 
   const topPerformers = analytics?.topPerformers || [];

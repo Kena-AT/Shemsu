@@ -112,12 +112,18 @@ class AdminController {
    */
   async getDashboardStats(req, res) {
     try {
-      // 1. Total Revenue (Paid orders)
+      // 1. Total Platform Revenue Breakdown
       const revenueResult = await db.execute(sql`
-        SELECT COALESCE(SUM(total_amount), 0) as total_revenue
+        SELECT 
+          COALESCE(SUM(service_fee::numeric), 0) as buyer_fees,
+          (SELECT COALESCE(SUM(platform_fee::numeric), 0) FROM order_items oi JOIN orders o2 ON oi.order_id = o2.id WHERE o2.payment_status = 'paid') as seller_fees
         FROM orders
         WHERE payment_status = 'paid'
       `);
+
+      const buyerFees = parseFloat(revenueResult.rows[0].buyer_fees);
+      const sellerFees = parseFloat(revenueResult.rows[0].seller_fees);
+      const totalRevenue = buyerFees + sellerFees;
 
       // 2. Active Users count (excluding deleted)
       const usersResult = await db.execute(sql`
@@ -193,7 +199,9 @@ class AdminController {
       `);
 
       res.json({
-        totalRevenue: parseFloat(revenueResult.rows[0].total_revenue),
+        totalRevenue,
+        buyerFees,
+        sellerFees,
         totalUsers: parseInt(usersResult.rows[0].total_users),
         totalProducts: parseInt(productsResult.rows[0].total_products),
         totalSellers: parseInt(sellersResult.rows[0].total_sellers),
@@ -804,7 +812,7 @@ class AdminController {
             oi.seller_id,
             u.full_name as seller_name,
             u.email as seller_email,
-            SUM(oi.price_at_purchase::numeric * oi.quantity) as total_earned
+            SUM(oi.seller_net::numeric) as total_earned
           FROM order_items oi
           JOIN users u ON oi.seller_id = u.id
           JOIN orders o ON oi.order_id = o.id

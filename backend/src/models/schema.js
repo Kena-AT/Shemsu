@@ -30,6 +30,8 @@ const users = pgTable('users', {
   twoFactorEnabled: boolean('two_factor_enabled').default(false).notNull(),
   phoneNumber: varchar('phone_number', { length: 20 }),
   bio: text('bio'),
+  latitude: numeric('latitude', { precision: 10, scale: 6 }),
+  longitude: numeric('longitude', { precision: 10, scale: 6 }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -158,6 +160,9 @@ const cartItems = pgTable('cart_items', {
 const orders = pgTable('orders', {
   id: uuid('id').primaryKey().defaultRandom(),
   buyerId: uuid('buyer_id').notNull().references(() => users.id),
+  subtotal: numeric('subtotal', { precision: 10, scale: 2 }).notNull().default('0'),
+  shippingAmount: numeric('shipping_amount', { precision: 10, scale: 2 }).notNull().default('0'),
+  serviceFee: numeric('service_fee', { precision: 10, scale: 2 }).notNull().default('0'),
   totalAmount: numeric('total_amount', { precision: 10, scale: 2 }).notNull(),
   currency: varchar('currency', { length: 3 }).default('ETB').notNull(),
   status: orderStatusEnum('status').default('pending').notNull(),
@@ -183,6 +188,8 @@ const orderItems = pgTable('order_items', {
   productId: uuid('product_id').notNull().references(() => products.id),
   quantity: integer('quantity').notNull(),
   priceAtPurchase: numeric('price_at_purchase', { precision: 10, scale: 2 }).notNull(),
+  platformFee: numeric('platform_fee', { precision: 10, scale: 2 }).notNull().default('0'),
+  sellerNet: numeric('seller_net', { precision: 10, scale: 2 }).notNull().default('0'),
   productNameSnapshot: varchar('product_name_snapshot', { length: 255 }).notNull(),
   attributesSnapshot: jsonb('attributes_snapshot').default({}).notNull(),
   productImageSnapshot: varchar('product_image_snapshot', { length: 500 }),

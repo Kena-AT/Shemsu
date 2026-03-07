@@ -19,7 +19,7 @@ class SellerController {
       
       const stats = await db.execute(sql`
         SELECT 
-          COALESCE(SUM(oi.price_at_purchase::numeric * oi.quantity), 0) as total_revenue,
+          COALESCE(SUM(oi.seller_net::numeric), 0) as total_revenue,
           COUNT(DISTINCT oi.order_id) as total_orders
         FROM order_items oi
         JOIN orders o ON oi.order_id = o.id
@@ -29,7 +29,7 @@ class SellerController {
       const dailyRevenue = await db.execute(sql`
         SELECT 
           DATE(o.paid_at) as date,
-          SUM(oi.price_at_purchase::numeric * oi.quantity) as revenue
+          SUM(oi.seller_net::numeric) as revenue
         FROM order_items oi
         JOIN orders o ON oi.order_id = o.id
         WHERE oi.seller_id = ${sellerId} AND o.payment_status = 'paid'
@@ -135,13 +135,15 @@ class SellerController {
   async updateProfile(req, res) {
     try {
       const sellerId = req.user.id;
-      const { fullName, phoneNumber, bio } = req.body;
+      const { fullName, phoneNumber, bio, latitude, longitude } = req.body;
 
       const [updated] = await db.update(users)
         .set({ 
           fullName, 
           phoneNumber, 
           bio, 
+          latitude,
+          longitude,
           updatedAt: new Date() 
         })
         .where(eq(users.id, sellerId))
@@ -153,7 +155,9 @@ class SellerController {
           id: updated.id,
           fullName: updated.fullName,
           phoneNumber: updated.phoneNumber,
-          bio: updated.bio
+          bio: updated.bio,
+          latitude: updated.latitude,
+          longitude: updated.longitude
         }
       });
     } catch (error) {

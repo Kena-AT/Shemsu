@@ -4,6 +4,7 @@ import { useAuthStore } from '../../../state/useAuthStore';
 import { useSeller } from '../../../hooks/useSeller';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
+import LocationPicker from '../../../components/common/LocationPicker';
 import toast from 'react-hot-toast';
 
 const SellerProfile = () => {
@@ -13,7 +14,9 @@ const SellerProfile = () => {
   const [formData, setFormData] = useState({
     fullName: '',
     phoneNumber: '',
-    bio: ''
+    bio: '',
+    latitude: null,
+    longitude: null
   });
 
   useEffect(() => {
@@ -21,7 +24,9 @@ const SellerProfile = () => {
       setFormData({
         fullName: user.fullName || '',
         phoneNumber: user.phoneNumber || '',
-        bio: user.bio || ''
+        bio: user.bio || '',
+        latitude: user.latitude ? parseFloat(user.latitude) : 9.03,
+        longitude: user.longitude ? parseFloat(user.longitude) : 38.74
       });
     }
   }, [user]);
@@ -33,7 +38,11 @@ const SellerProfile = () => {
     }
 
     try {
-      await updateProfile.mutateAsync(formData);
+      await updateProfile.mutateAsync({
+        ...formData,
+        latitude: formData.latitude?.toString(),
+        longitude: formData.longitude?.toString()
+      });
     } catch (error) {
       // Error handled by mutation
     }
@@ -118,6 +127,16 @@ const SellerProfile = () => {
                  ></textarea>
              </div>
 
+             <div className="md:col-span-2">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-4 flex items-center gap-2">
+                    <MapPin size={14} className="text-blue-600" /> Store Location (For Shipping Calculation)
+                </label>
+                <LocationPicker 
+                    initialPosition={{ lat: formData.latitude, lng: formData.longitude }}
+                    onLocationSelect={(pos) => setFormData({ ...formData, latitude: pos.lat, longitude: pos.lng })}
+                />
+             </div>
+
              <div className="md:col-span-2 mt-10 pt-8 flex justify-end gap-3 border-t border-slate-50">
                  <Button 
                     type="button"
@@ -126,7 +145,9 @@ const SellerProfile = () => {
                     onClick={() => setFormData({
                         fullName: user.fullName || '',
                         phoneNumber: user.phoneNumber || '',
-                        bio: user.bio || ''
+                        bio: user.bio || '',
+                        latitude: user.latitude ? parseFloat(user.latitude) : 9.03,
+                        longitude: user.longitude ? parseFloat(user.longitude) : 38.74
                     })}
                  >
                     Discard

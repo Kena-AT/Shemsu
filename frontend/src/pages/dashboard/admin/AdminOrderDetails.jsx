@@ -132,14 +132,18 @@ const AdminOrderDetails = () => {
             </div>
             
             {/* Value Summary */}
-            <div className="p-10 bg-slate-50/50 border-t border-slate-100 grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10 font-sans">
+            <div className="p-10 bg-slate-50/50 border-t border-slate-100 grid grid-cols-1 md:grid-cols-5 gap-8 relative z-10 font-sans">
               <div className="flex flex-col">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Item Subtotal</span>
-                <span className="text-sm font-black text-slate-900 italic">Br {order.itemsPrice?.toLocaleString()}</span>
+                <span className="text-sm font-black text-slate-900 italic">Br {order.subtotal?.toLocaleString() || order.itemsPrice?.toLocaleString()}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Logistic Fees</span>
-                <span className="text-sm font-black text-slate-900 italic">Br {order.shippingPrice?.toLocaleString() || '0.00'}</span>
+                <span className="text-sm font-black text-slate-900 italic">Br {order.shippingAmount?.toLocaleString() || order.shippingPrice?.toLocaleString() || '0.00'}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Service Fee (2%)</span>
+                <span className="text-sm font-black text-slate-900 italic text-blue-600">Br {order.serviceFee?.toLocaleString() || '0.00'}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Applied Tax</span>
@@ -147,7 +151,7 @@ const AdminOrderDetails = () => {
               </div>
               <div className="text-right flex flex-col items-end">
                 <span className="text-[10px] font-black text-blue-600 uppercase tracking-[0.3em] mb-2">Total Exposure</span>
-                <span className="text-2xl font-black text-blue-600 tracking-tighter italic">Br {order.totalPrice?.toLocaleString()}</span>
+                <span className="text-2xl font-black text-blue-600 tracking-tighter italic">Br {order.totalAmount?.toLocaleString() || order.totalPrice?.toLocaleString()}</span>
               </div>
             </div>
           </section>

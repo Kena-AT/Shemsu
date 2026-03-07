@@ -31,6 +31,8 @@ exports.getCart = async (req, res) => {
                     id: true,
                     fullName: true,
                     isVerified: true,
+                    latitude: true,
+                    longitude: true,
                   }
                 }
               }
@@ -61,6 +63,8 @@ exports.getCart = async (req, res) => {
         attributes: item.attributes,
         vendor: item.product.seller.fullName,
         vendorId: item.product.seller.id,
+        vendorLat: item.product.seller.latitude,
+        vendorLng: item.product.seller.longitude,
         isPriceStale,
         isInvalid,
         statusMessage: isInvalid ? 'Item no longer available or out of stock' : (isPriceStale ? 'Price updated, please review' : null)

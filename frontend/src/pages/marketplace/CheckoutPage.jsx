@@ -4,10 +4,12 @@ import { useCart } from '../../hooks/useCart';
 import { useOrder } from '../../hooks/useOrder';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
-import { MapPin, Phone, User, ShoppingBag, CreditCard, ChevronLeft } from 'lucide-react';
+import { MapPin, Phone, User, ShoppingBag, CreditCard, ChevronLeft, Loader2, Map as MapIcon } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { checkoutSchema, validateWithZod } from '../../lib/validationSchemas';
 import { formatPrice } from '../../lib/utils';
+import { calculateOrderSummary } from '../../lib/pricing';
+import LocationPicker from '../../components/common/LocationPicker';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -108,9 +110,11 @@ const CheckoutPage = () => {
     );
   }
 
-  const subtotal = cart.items.reduce((sum, item) => sum + (parseFloat(item.priceSnapshot) * item.quantity), 0);
-  const shipping = 100; // Flat rate for now
-  const total = subtotal + shipping;
+  const summary = useMemo(() => {
+    return calculateOrderSummary(cart?.items || [], { lat: formData.lat, lng: formData.lng });
+  }, [cart, formData.lat, formData.lng]);
+
+  const { subtotal, shipping, serviceFee, total } = summary;
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20 pb-12">
@@ -183,12 +187,23 @@ const CheckoutPage = () => {
                   icon={Phone}
                 />
 
+                <div className="space-y-4">
+                  <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <MapPin size={16} className="text-blue-600" /> Exact Delivery Location
+                  </label>
+                  <LocationPicker 
+                    initialPosition={{ lat: formData.lat, lng: formData.lng }}
+                    onLocationSelect={(pos) => setFormData(prev => ({ ...prev, lat: pos.lat, lng: pos.lng }))}
+                  />
+                  <p className="text-[10px] text-gray-400">Shipping cost is calculated based on the distance between you and the seller.</p>
+                </div>
+
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">Additional Instructions (Optional)</label>
                   <textarea 
                     name="additionalInfo"
-                    rows="3"
-                    className="w-full rounded-lg border border-gray-200 p-4 transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none placeholder:text-gray-400"
+                    rows="2"
+                    className="w-full rounded-lg border border-gray-200 p-4 transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none placeholder:text-gray-400 text-sm"
                     placeholder="Directions, preferred delivery time, etc."
                     value={formData.additionalInfo}
                     onChange={handleInputChange}
@@ -266,8 +281,12 @@ const CheckoutPage = () => {
                   <span>{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
-                  <span>Shipping</span>
+                  <span>Shipping Cost</span>
                   <span>{formatPrice(shipping)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>Service Fee (2%)</span>
+                  <span>{formatPrice(serviceFee)}</span>
                 </div>
                 <div className="flex justify-between text-xl font-bold text-gray-900 pt-3 border-t border-gray-100">
                   <span>Total</span>

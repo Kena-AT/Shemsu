@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../hooks/useCart';
 import { useCartStore } from '../../state/useCartStore';
 import { formatPrice, formatNumber } from '../../lib/utils';
+import { calculateOrderSummary } from '../../lib/pricing';
 import Footer from '../../components/layout/Footer';
 
 const CartPage = () => {
@@ -35,13 +36,11 @@ const CartPage = () => {
     }
   }, [cart, setItems]);
 
-  const subtotal = useMemo(() => {
-    return cart?.items?.reduce((sum, item) => sum + (item.priceSnapshot * item.quantity), 0) || 0;
+  const summary = useMemo(() => {
+    return calculateOrderSummary(cart?.items || []);
   }, [cart]);
 
-  const shipping = subtotal > 0 ? 12.50 : 0;
-  const tax = subtotal * 0.07; // 7% tax for example
-  const total = subtotal + shipping + tax;
+  const { subtotal, shipping, serviceFee, total } = summary;
 
   if (isLoading) {
     return (
@@ -207,20 +206,23 @@ const CartPage = () => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <div className="flex items-center gap-1">
-                    <span className="text-slate-500 font-medium">Shipping</span>
-                    <Info className="w-3 h-3 text-slate-300" />
+                    <span className="text-slate-500 font-medium">Estimated Shipping</span>
+                    <Truck className="w-3 h-3 text-slate-300" />
                   </div>
                   <span className="text-slate-900 font-bold">{formatPrice(shipping)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500 font-medium">Estimated Tax</span>
-                  <span className="text-slate-900 font-bold">{formatPrice(tax)}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-slate-500 font-medium">Service Fee (2%)</span>
+                    <ShieldCheck className="w-3 h-3 text-slate-300" />
+                  </div>
+                  <span className="text-slate-900 font-bold">{formatPrice(serviceFee)}</span>
                 </div>
                 <div className="h-px bg-slate-100 my-2" />
                 <div className="flex justify-between items-end">
                   <div>
                     <span className="text-base font-bold block mb-[-4px]">Total</span>
-                    <span className="text-[10px] text-slate-400 font-medium uppercase tracking-widest leading-none">VAT Included</span>
+                    <span className="text-[10px] text-slate-400 font-medium uppercase tracking-widest leading-none text-left block">Recalculated at Checkout</span>
                   </div>
                   <span className="text-3xl font-black text-blue-600">{formatPrice(total)}</span>
                 </div>
