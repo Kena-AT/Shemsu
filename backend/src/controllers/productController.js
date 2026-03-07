@@ -24,6 +24,7 @@ exports.getProducts = async (req, res) => {
       name: products.name,
       description: products.description,
       price: products.price,
+      salePrice: products.salePrice,
       stock: products.stock,
       images: products.images,
       attributes: products.attributes,
@@ -63,11 +64,13 @@ exports.getProductById = async (req, res) => {
       name: products.name,
       description: products.description,
       price: products.price,
+      salePrice: products.salePrice,
       stock: products.stock,
       images: products.images,
       attributes: products.attributes,
       createdAt: products.createdAt,
       categoryId: products.categoryId,
+      version: products.version,
       category: categories,
       seller: {
         id: users.id,
@@ -138,13 +141,18 @@ exports.createProduct = async (req, res) => {
       });
     }
 
-    const { name, description, price: rawPrice, stock: rawStock, categoryId, attributes } = req.body;
+    const { name, description, price: rawPrice, salePrice: rawSalePrice, stock: rawStock, categoryId, attributes } = req.body;
 
     const price = parseFloat(rawPrice);
+    const salePrice = rawSalePrice ? parseFloat(rawSalePrice) : null;
     const stock = parseInt(rawStock);
 
     if (isNaN(price) || isNaN(stock)) {
       return res.status(400).json({ message: 'Error creating product: Price and stock must be valid numbers' });
+    }
+
+    if (rawSalePrice && isNaN(salePrice)) {
+       return res.status(400).json({ message: 'Error creating product: Sale price must be a valid number' });
     }
     
     // Process uploaded images
@@ -160,6 +168,7 @@ exports.createProduct = async (req, res) => {
       name,
       description,
       price,
+      salePrice,
       stock,
       images,
       attributes: attributes ? JSON.parse(attributes) : {},
@@ -188,7 +197,7 @@ exports.updateProduct = async (req, res) => {
       });
     }
 
-    const { name, description, price: rawPrice, stock: rawStock, categoryId, attributes, version } = req.body;
+    const { name, description, price: rawPrice, salePrice: rawSalePrice, stock: rawStock, categoryId, attributes, version } = req.body;
     const { id } = req.params;
 
     // Validate version to avoid NaN in query
@@ -199,10 +208,15 @@ exports.updateProduct = async (req, res) => {
 
     // Parse other numeric fields
     const price = parseFloat(rawPrice);
+    const salePrice = rawSalePrice ? parseFloat(rawSalePrice) : null;
     const stock = parseInt(rawStock);
 
     if (isNaN(price) || isNaN(stock)) {
       return res.status(400).json({ message: 'Update failed: Price and stock must be valid numbers' });
+    }
+
+    if (rawSalePrice && isNaN(salePrice)) {
+      return res.status(400).json({ message: 'Update failed: Sale price must be a valid number' });
     }
 
     const result = await db.update(products)
@@ -210,6 +224,7 @@ exports.updateProduct = async (req, res) => {
         name,
         description,
         price,
+        salePrice,
         stock,
         categoryId,
         attributes: attributes ? JSON.parse(attributes) : undefined,

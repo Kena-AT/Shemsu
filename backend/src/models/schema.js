@@ -49,6 +49,7 @@ const products = pgTable('products', {
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description').notNull(),
   price: numeric('price', { precision: 10, scale: 2 }).notNull(),
+  salePrice: numeric('sale_price', { precision: 10, scale: 2 }),
   stock: integer('stock').notNull(),
   images: jsonb('images').default([]).notNull(), // [{ url, public_id, isPrimary }]
   attributes: jsonb('attributes').default({}).notNull(),
