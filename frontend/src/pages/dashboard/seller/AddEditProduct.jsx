@@ -263,7 +263,7 @@ const AddEditProduct = () => {
                         onChange={handleChange}
                         placeholder="0.00" 
                         step="0.01"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-bold"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-14 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-bold"
                         required
                       />
                     </div>
@@ -279,7 +279,7 @@ const AddEditProduct = () => {
                         onChange={handleChange}
                         placeholder="0.00" 
                         step="0.01"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-bold text-blue-600"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-14 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-bold text-blue-600"
                       />
                     </div>
                   </div>
