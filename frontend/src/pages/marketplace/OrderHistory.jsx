@@ -113,7 +113,7 @@ const OrderHistory = () => {
                   </div>
                   <button 
                     className="flex items-center text-blue-600 font-bold text-sm hover:underline"
-                    onClick={() => navigate(`/orders/${order.id}`)}
+                    onClick={() => navigate(`/app/orders/${order.id}`)}
                   >
                     View Details
                     <ChevronRight size={18} />

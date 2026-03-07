@@ -30,6 +30,7 @@ import CheckoutPage from './pages/marketplace/CheckoutPage';
 import PaymentSuccessPage from './pages/marketplace/PaymentSuccessPage';
 import PaymentFailedPage from './pages/marketplace/PaymentFailedPage';
 import OrderHistory from './pages/marketplace/OrderHistory';
+import OrderDetailsPage from './pages/marketplace/OrderDetailsPage';
 
 // Seller Dashboard Pages
 import SellerDashboard from './pages/dashboard/seller/SellerDashboard';
@@ -170,6 +171,7 @@ function App() {
               <Route path="checkout/success" element={<ProtectedRoute allowedRoles={['buyer']}><PaymentSuccessPage /></ProtectedRoute>} />
               <Route path="checkout/error" element={<ProtectedRoute allowedRoles={['buyer']}><PaymentFailedPage /></ProtectedRoute>} />
               <Route path="orders" element={<ProtectedRoute allowedRoles={['buyer']}><OrderHistory /></ProtectedRoute>} />
+              <Route path="orders/:id" element={<ProtectedRoute allowedRoles={['buyer']}><OrderDetailsPage /></ProtectedRoute>} />
               <Route path="profile" element={<ProtectedRoute allowedRoles={['buyer', 'seller', 'admin']}><ProfilePage /></ProtectedRoute>} />
               <Route path="settings" element={<ProtectedRoute allowedRoles={['buyer', 'seller', 'admin']}><AccountSettings /></ProtectedRoute>} />
               

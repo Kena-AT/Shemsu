@@ -21,6 +21,7 @@ class OrderController {
     this.finalizeOrder = this.finalizeOrder.bind(this);
     this.getBuyerOrders = this.getBuyerOrders.bind(this);
     this.getSellerOrders = this.getSellerOrders.bind(this);
+    this.getOrderDetails = this.getOrderDetails.bind(this);
     this.updateOrderItemStatus = this.updateOrderItemStatus.bind(this);
   }
 
@@ -389,29 +390,112 @@ class OrderController {
   }
 
   /**
+   * Get Single Order Details
+   */
+  async getOrderDetails(req, res) {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      const role = req.user.role;
+
+      const order = await db.query.orders.findFirst({
+        where: eq(orders.id, id),
+        with: {
+          items: {
+            with: { 
+              product: {
+                with: { seller: true }
+              } 
+            }
+          },
+          buyer: true
+        }
+      });
+
+      if (!order) {
+        return res.status(404).json({ message: 'Order not found' });
+      }
+
+      // Authorization Check
+      if (role === 'buyer' && order.buyerId !== userId) {
+        return res.status(403).json({ message: 'Unauthorized' });
+      }
+      
+      if (role === 'seller') {
+        // Filter items to only show seller's items
+        order.items = order.items.filter(item => item.sellerId === userId);
+        if (order.items.length === 0) {
+          return res.status(403).json({ message: 'Unauthorized' });
+        }
+      }
+
+      res.json(order);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  /**
    * Update Order Item Status (Seller Action)
    */
   async updateOrderItemStatus(req, res) {
     try {
       const { itemId } = req.params;
       const { status } = req.body;
-      const sellerId = req.user.id;
+      const userId = req.user.id;
+      const role = req.user.role;
 
-      const [updatedItem] = await db.update(orderItems)
-        .set({ status })
-        .where(and(
-          eq(orderItems.id, itemId),
-          eq(orderItems.sellerId, sellerId)
-        ))
-        .returning();
+      // Find the item first to check permissions and current status
+      const item = await db.query.orderItems.findFirst({
+        where: eq(orderItems.id, itemId),
+        with: { order: true }
+      });
 
-      if (!updatedItem) {
-        return res.status(404).json({ message: 'Order item not found or unauthorized' });
+      if (!item) {
+        return res.status(404).json({ message: 'Order item not found' });
       }
 
-      // Check if all items in the parent order are delivered to update global status
-      // (Implementation deferred for now as global status logic is complex)
+      let canUpdate = false;
 
+      if (role === 'seller' && item.sellerId === userId) {
+        // Sellers can update to processing, shipped, or cancelled
+        const allowedStatuses = ['processing', 'shipped', 'cancelled', 'pending'];
+        if (allowedStatuses.includes(status)) {
+          canUpdate = true;
+        } else if (status === 'delivered') {
+          // Sellers CAN mark as delivered, but usually buyers confirm
+          canUpdate = true;
+        }
+      } else if (role === 'buyer' && item.order.buyerId === userId) {
+        // Buyers can ONLY confirm delivery if it's already shipped
+        if (status === 'delivered' && item.status === 'shipped') {
+          canUpdate = true;
+        } else {
+          return res.status(400).json({ 
+            message: 'You can only confirm delivery for items that have been shipped' 
+          });
+        }
+      }
+
+      if (!canUpdate) {
+        return res.status(403).json({ message: 'Unauthorized status update' });
+      }
+
+      const [updatedItem] = await db.update(orderItems)
+        .set({ status, updatedAt: new Date() })
+        .where(eq(orderItems.id, itemId))
+        .returning();
+
+      // Log status change
+      logger.info('Order item status updated', { 
+        itemId, 
+        newStatus: status, 
+        updatedBy: userId,
+        role 
+      });
+
+      // Notification logic (Deferred to notificationService)
+      // For now, just return success
       res.json(updatedItem);
     } catch (error) {
       res.status(500).json({ message: error.message });

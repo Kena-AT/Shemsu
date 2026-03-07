@@ -27,6 +27,16 @@ export const useOrder = () => {
     staleTime: 1000 * 60 * 5,
   });
 
+  // Get Single Order Details
+  const useGetOrderDetails = (orderId) => useQuery({
+    queryKey: ['orders', 'detail', orderId],
+    queryFn: async () => {
+      const { data } = await api.get(`/orders/${orderId}`);
+      return data;
+    },
+    enabled: !!orderId,
+  });
+
   // Get Seller Orders
   const useGetSellerOrders = () => useQuery({
     queryKey: ['orders', 'seller'],
@@ -77,6 +87,7 @@ export const useOrder = () => {
     useGetBuyerOrders,
     useGetSellerAnalytics,
     useGetSellerOrders,
+    useGetOrderDetails,
     useVerifyOrder,
     useUpdateItemStatus
   };

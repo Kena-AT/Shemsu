@@ -39,6 +39,13 @@ router.get('/verify/:txRef', orderController.verifyOrder);
 router.get('/buyer', orderController.getBuyerOrders);
 
 /**
+ * @route GET /api/orders/:id
+ * @desc Get details for a single order
+ * @access Private (Buyer/Seller)
+ */
+router.get('/:id', authorize('buyer', 'seller', 'admin'), orderController.getOrderDetails);
+
+/**
  * @route GET /api/orders/seller
  * @desc Get orders for the logged in seller
  * @access Private (Seller)
@@ -51,7 +58,7 @@ router.get('/seller', authorize('seller', 'admin'), orderController.getSellerOrd
  * @access Private (Seller)
  */
 router.patch('/item/:itemId/status', 
-  authorize('seller', 'admin'), 
+  authorize('buyer', 'seller', 'admin'), 
   validate(updateOrderItemStatusSchema),
   orderController.updateOrderItemStatus
 );
