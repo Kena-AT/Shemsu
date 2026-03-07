@@ -93,6 +93,12 @@ const CheckoutPage = () => {
     }
   };
 
+  const summary = useMemo(() => {
+    return calculateOrderSummary(cart?.items || [], { lat: formData.lat, lng: formData.lng });
+  }, [cart, formData.lat, formData.lng]);
+
+  const { subtotal, shipping, serviceFee, total } = summary;
+
   if (cartLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -111,12 +117,6 @@ const CheckoutPage = () => {
       </div>
     );
   }
-
-  const summary = useMemo(() => {
-    return calculateOrderSummary(cart?.items || [], { lat: formData.lat, lng: formData.lng });
-  }, [cart, formData.lat, formData.lng]);
-
-  const { subtotal, shipping, serviceFee, total } = summary;
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20 pb-12">
