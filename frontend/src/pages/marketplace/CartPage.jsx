@@ -17,6 +17,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../hooks/useCart';
 import { useCartStore } from '../../state/useCartStore';
+import { formatPrice, formatNumber } from '../../lib/utils';
 import Footer from '../../components/layout/Footer';
 
 const CartPage = () => {
@@ -79,7 +80,7 @@ const CartPage = () => {
         <div className="flex items-center justify-between mb-8">
           <div className="text-left">
             <h1 className="text-3xl font-black text-slate-900 mb-1">Shopping Cart</h1>
-            <p className="text-sm text-slate-500 font-medium">{cart.items.length} Items</p>
+            <p className="text-sm text-slate-500 font-medium">{formatNumber(cart.items.length)} Items</p>
           </div>
           <button 
             onClick={() => { if(window.confirm('Clear entire cart?')) clearCart.mutate() }}
@@ -129,7 +130,7 @@ const CartPage = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-start gap-4 mb-2">
                             <Link to={`/app/marketplace/product/${item.productId}`} className="font-bold text-slate-900 hover:text-blue-600 transition-colors line-clamp-1">{item.name}</Link>
-                            <span className="font-black text-lg">ETB {parseFloat(item.priceSnapshot).toFixed(2)}</span>
+                            <span className="font-black text-lg">{formatPrice(parseFloat(item.priceSnapshot))}</span>
                           </div>
                           
                           <div className="text-xs text-slate-400 font-medium space-x-2 mb-4 capitalize">
@@ -202,18 +203,18 @@ const CartPage = () => {
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500 font-medium">Subtotal</span>
-                  <span className="text-slate-900 font-bold">ETB {subtotal.toFixed(2)}</span>
+                  <span className="text-slate-900 font-bold">{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <div className="flex items-center gap-1">
                     <span className="text-slate-500 font-medium">Shipping</span>
                     <Info className="w-3 h-3 text-slate-300" />
                   </div>
-                  <span className="text-slate-900 font-bold">ETB {shipping.toFixed(2)}</span>
+                  <span className="text-slate-900 font-bold">{formatPrice(shipping)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500 font-medium">Estimated Tax</span>
-                  <span className="text-slate-900 font-bold">ETB {tax.toFixed(2)}</span>
+                  <span className="text-slate-900 font-bold">{formatPrice(tax)}</span>
                 </div>
                 <div className="h-px bg-slate-100 my-2" />
                 <div className="flex justify-between items-end">
@@ -221,7 +222,7 @@ const CartPage = () => {
                     <span className="text-base font-bold block mb-[-4px]">Total</span>
                     <span className="text-[10px] text-slate-400 font-medium uppercase tracking-widest leading-none">VAT Included</span>
                   </div>
-                  <span className="text-3xl font-black text-blue-600">ETB {total.toFixed(2)}</span>
+                  <span className="text-3xl font-black text-blue-600">{formatPrice(total)}</span>
                 </div>
               </div>
 

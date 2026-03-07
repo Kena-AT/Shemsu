@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useProducts } from '../../hooks/useProducts';
+import { formatPrice } from '../../lib/utils';
 import Footer from '../../components/layout/Footer';
 
 const SearchResults = () => {
@@ -26,7 +27,7 @@ const SearchResults = () => {
   const [internalQuery, setInternalQuery] = useState(query);
   const [viewMode, setViewMode] = useState('grid');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [priceRange, setPriceRange] = useState(5000);
+  const [priceRange, setPriceRange] = useState(1000000);
 
   const { useGetProducts } = useProducts();
   const { data: products, isLoading } = useGetProducts({ 
@@ -116,14 +117,15 @@ const SearchResults = () => {
                   <input 
                     type="range" 
                     min="0"
-                    max="5000"
+                    max="1000000"
+                    step="1000"
                     value={priceRange}
                     onChange={(e) => setPriceRange(Number(e.target.value))}
                     className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" 
                   />
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold">ETB 0</div>
-                    <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold">ETB {priceRange}</div>
+                    <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold">{formatPrice(0)}</div>
+                    <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold">{formatPrice(priceRange)}</div>
                   </div>
                 </div>
               </div>
@@ -206,7 +208,7 @@ const SearchResults = () => {
 
                       <div className="mt-auto flex items-center justify-between">
                         <div className="flex flex-col">
-                          <span className="text-2xl font-black text-slate-900">ETB {parseFloat(p.price).toFixed(2)}</span>
+                          <span className="text-2xl font-black text-slate-900">{formatPrice(parseFloat(p.price))}</span>
                           <span className="text-xs text-emerald-600 font-bold">Free Shipping</span>
                         </div>
                         <button className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95">

@@ -7,6 +7,7 @@ import Input from '../../components/common/Input';
 import { MapPin, Phone, User, ShoppingBag, CreditCard, ChevronLeft } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { checkoutSchema, validateWithZod } from '../../lib/validationSchemas';
+import { formatPrice } from '../../lib/utils';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -252,7 +253,7 @@ const CheckoutPage = () => {
                       <h4 className="text-gray-900 font-medium truncate">{item.product?.name}</h4>
                       <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                       <p className="text-blue-600 font-semibold mt-1">
-                        ETB {parseFloat(item.priceSnapshot).toLocaleString()}
+                        {formatPrice(parseFloat(item.priceSnapshot))}
                       </p>
                     </div>
                   </div>
@@ -262,15 +263,15 @@ const CheckoutPage = () => {
               <div className="border-t border-gray-100 pt-6 space-y-3">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal</span>
-                  <span>ETB {subtotal.toLocaleString()}</span>
+                  <span>{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
-                  <span>ETB {shipping.toLocaleString()}</span>
+                  <span>{formatPrice(shipping)}</span>
                 </div>
                 <div className="flex justify-between text-xl font-bold text-gray-900 pt-3 border-t border-gray-100">
                   <span>Total</span>
-                  <span className="text-blue-600">ETB {total.toLocaleString()}</span>
+                  <span className="text-blue-600">{formatPrice(total)}</span>
                 </div>
               </div>
 

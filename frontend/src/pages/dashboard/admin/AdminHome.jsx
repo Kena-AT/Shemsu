@@ -21,6 +21,7 @@ import {
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAdmin } from '../../../hooks/useAdmin';
+import { formatPrice, formatNumber } from '../../../lib/utils';
 
 const AdminHome = () => {
   const { useGetStats } = useAdmin();
@@ -37,10 +38,10 @@ const AdminHome = () => {
   ];
 
   const statCards = [
-    { label: 'Total Users', value: stats?.totalUsers?.toLocaleString() || '0', change: '+12.5%', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Total Products', value: stats?.totalProducts?.toLocaleString() || '0', change: '+5.2%', icon: Package, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    { label: 'Revenue (ETB)', value: `ETB ${stats?.totalRevenue?.toLocaleString() || '0.00'}`, change: '+18.2%', icon: CreditCard, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: 'Active Sellers', value: stats?.totalSellers?.toLocaleString() || '0', change: '-2.1%', icon: CheckCircle, color: 'text-rose-600', bg: 'bg-rose-50' },
+    { label: 'Total Users', value: formatNumber(stats?.totalUsers || 0), change: '+12.5%', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'Total Products', value: formatNumber(stats?.totalProducts || 0), change: '+5.2%', icon: Package, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    { label: 'Revenue (ETB)', value: formatPrice(stats?.totalRevenue || 0), change: '+18.2%', icon: CreditCard, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: 'Active Sellers', value: formatNumber(stats?.totalSellers || 0), change: '-2.1%', icon: CheckCircle, color: 'text-rose-600', bg: 'bg-rose-50' },
   ];
 
   if (isLoading) {

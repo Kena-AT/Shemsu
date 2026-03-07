@@ -1,6 +1,7 @@
 import React from 'react';
 import { useOrder } from '../../../hooks/useOrder';
 import { Package, Truck, CheckCircle, XCircle, AlertCircle, ExternalLink, User, Smartphone, MapPin, Download } from 'lucide-react';
+import { formatPrice, formatNumber } from '../../../lib/utils';
 import Button from '../../../components/common/Button';
 import { exportToCSV } from '../../../lib/exportUtils';
 import { toast } from 'react-hot-toast';
@@ -45,7 +46,7 @@ const ManageOrders = () => {
           </button>
           <div className="bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm font-medium text-slate-600 flex items-center shadow-sm">
             <Package size={18} className="mr-2 text-blue-500" />
-            {orders?.length || 0} Total Orders
+            {formatNumber(orders?.length || 0)} Total Orders
           </div>
         </div>
       </div>
@@ -126,7 +127,7 @@ const ManageOrders = () => {
                         </td>
                         <td className="py-4 text-center font-medium text-slate-700">{item.quantity}</td>
                         <td className="py-4 text-right font-bold text-slate-900">
-                          ETB {parseFloat(item.priceAtPurchase).toLocaleString()}
+                          {formatPrice(parseFloat(item.priceAtPurchase))}
                         </td>
                         <td className="py-4 text-center pl-8">
                           <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${

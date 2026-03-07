@@ -4,6 +4,7 @@ import { Search, ShoppingCart, Star, Heart, Filter, ChevronDown, Grid, List, Lay
 import { motion } from 'framer-motion';
 import { useProducts } from '../../hooks/useProducts';
 import { useCategories } from '../../hooks/useCategories';
+import { formatPrice, formatNumber } from '../../lib/utils';
 import Footer from '../../components/layout/Footer';
 
 const ProductListing = () => {
@@ -16,7 +17,7 @@ const ProductListing = () => {
   const { useGetProducts } = useProducts();
   const { data: products, isLoading } = useGetProducts({ categoryId, search });
 
-  const [priceRange, setPriceRange] = useState(5000);
+  const [priceRange, setPriceRange] = useState(1000000);
   const [viewMode, setViewMode] = useState('grid');
   const [sortBy, setSortBy] = useState('Newest Arrivals');
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -64,7 +65,7 @@ const ProductListing = () => {
                   className={`flex justify-between items-center cursor-pointer transition-colors ${!categoryId ? 'text-blue-600 font-medium' : 'text-slate-600 hover:text-blue-600'}`}
                 >
                   <span>All Categories</span>
-                  <span className="text-slate-400 font-normal">1,240</span>
+                  <span className="text-slate-400 font-normal">{formatNumber(1240)}</span>
                 </li>
                 {categories?.map((cat) => (
                   <li 
@@ -76,27 +77,27 @@ const ProductListing = () => {
                     className={`flex justify-between items-center cursor-pointer transition-colors ${categoryId === cat.id ? 'text-blue-600 font-medium' : 'text-slate-600 hover:text-blue-600'}`}
                   >
                     <span>{cat.name}</span>
-                    <span className="text-slate-400">452</span>
+                    <span className="text-slate-400">{formatNumber(452)}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
             <div className="mb-8">
-              <h3 className="font-bold mb-4">Price Range: <span className="text-blue-600">ETB {priceRange}</span></h3>
+              <h3 className="font-bold mb-4">Price Range: <span className="text-blue-600">{formatPrice(priceRange)}</span></h3>
               <div className="px-2">
                 <input 
                   type="range" 
                   min="0" 
-                  max="5000" 
-                  step="50"
+                  max="1000000" 
+                  step="1000"
                   value={priceRange}
                   onChange={(e) => setPriceRange(parseInt(e.target.value))}
                   className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                 />
                 <div className="flex justify-between mt-2 text-xs text-slate-500 font-medium">
-                  <span>ETB 0</span>
-                  <span>ETB 5000+</span>
+                  <span>{formatPrice(0)}</span>
+                  <span>{formatPrice(1000000)}+</span>
                 </div>
               </div>
             </div>
@@ -122,7 +123,7 @@ const ProductListing = () => {
               Apply Filters
             </button>
             <button 
-              onClick={() => setPriceRange(5000)}
+              onClick={() => setPriceRange(1000000)}
               className="w-full py-2 text-slate-500 text-sm hover:text-blue-600 transition-colors"
             >
               Clear all
@@ -233,7 +234,7 @@ const ProductListing = () => {
                           </p>
                         )}
                         <div className={`flex items-center justify-between mt-auto ${viewMode === 'list' ? 'pt-4 border-t border-slate-50' : 'pt-4'}`}>
-                          <span className="font-bold text-lg">ETB {price.toFixed(2)}</span>
+                          <span className="font-bold text-lg">{formatPrice(price)}</span>
                           <button className="p-2 bg-slate-50 hover:bg-blue-600 hover:text-white rounded-lg transition-all">
                             <ShoppingCart className="w-4 h-4" />
                           </button>

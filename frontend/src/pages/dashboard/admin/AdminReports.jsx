@@ -31,6 +31,7 @@ import {
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAdmin } from '../../../hooks/useAdmin';
+import { formatPrice, formatNumber } from '../../../lib/utils';
 import Button from '../../../components/common/Button';
 
 const AdminReports = () => {
@@ -60,10 +61,10 @@ const AdminReports = () => {
   ];
 
   const metrics = [
-    { label: 'Total Revenue', value: stats?.totalRevenue ? `ETB ${stats.totalRevenue.toLocaleString()}` : 'ETB 0', change: '+12.5%', icon: TrendingUp, positive: true },
-    { label: 'Active Users', value: stats?.totalUsers?.toLocaleString() || '0', change: '+5.2%', icon: Users, positive: true },
-    { label: 'Total Sellers', value: stats?.totalSellers?.toLocaleString() || '0', change: '+8.1%', icon: UserPlus, positive: true },
-    { label: 'Total Products', value: stats?.totalProducts?.toLocaleString() || '0', change: '+2.4%', icon: Activity, positive: true },
+    { label: 'Total Revenue', value: formatPrice(stats?.totalRevenue || 0), change: '+12.5%', icon: TrendingUp, positive: true },
+    { label: 'Active Users', value: formatNumber(stats?.totalUsers || 0), change: '+5.2%', icon: Users, positive: true },
+    { label: 'Total Sellers', value: formatNumber(stats?.totalSellers || 0), change: '+8.1%', icon: UserPlus, positive: true },
+    { label: 'Total Products', value: formatNumber(stats?.totalProducts || 0), change: '+2.4%', icon: Activity, positive: true },
   ];
 
   const topPerformers = analytics?.topPerformers || [];
@@ -233,7 +234,7 @@ const AdminReports = () => {
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-3xl font-black text-slate-900 italic">$482k</span>
+              <span className="text-3xl font-black text-slate-900 italic">{formatPrice(482000)}</span>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Top Sale</span>
             </div>
           </div>

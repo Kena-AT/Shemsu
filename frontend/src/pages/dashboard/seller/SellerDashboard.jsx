@@ -26,6 +26,7 @@ import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../../state/useAuthStore';
 import { useProducts } from '../../../hooks/useProducts';
 import { useOrder } from '../../../hooks/useOrder';
+import { formatPrice, formatNumber } from '../../../lib/utils';
 
 const SellerDashboard = () => {
   const { user } = useAuthStore();
@@ -41,7 +42,7 @@ const SellerDashboard = () => {
   const stats = [
     { 
       label: 'Gross Revenue', 
-      value: analyticsLoading ? '...' : `ETB ${analytics?.revenue?.toLocaleString() || '0.00'}`, 
+      value: analyticsLoading ? '...' : formatPrice(analytics?.revenue || 0), 
       change: analytics?.revenue > 0 ? '+ Live' : 'No data', 
       icon: TrendingUp, 
       color: 'text-emerald-600', 
@@ -49,7 +50,7 @@ const SellerDashboard = () => {
     },
     { 
       label: 'Active Products', 
-      value: statsLoading ? '...' : String(statsData?.active || 0), 
+      value: statsLoading ? '...' : formatNumber(statsData?.active || 0), 
       change: 'Live', 
       icon: Package, 
       color: 'text-blue-600', 
@@ -57,7 +58,7 @@ const SellerDashboard = () => {
     },
     { 
       label: 'Total Orders', 
-      value: analyticsLoading ? '...' : String(analytics?.orders || 0), 
+      value: analyticsLoading ? '...' : formatNumber(analytics?.orders || 0), 
       change: analytics?.orders > 0 ? '+ Live' : 'No data', 
       icon: ShoppingCart, 
       color: 'text-amber-600', 
@@ -266,7 +267,7 @@ const SellerDashboard = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm font-bold text-slate-900">ETB {sellerTotal.toLocaleString()}</span>
+                          <span className="text-sm font-bold text-slate-900">{formatPrice(sellerTotal)}</span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2 text-emerald-600">

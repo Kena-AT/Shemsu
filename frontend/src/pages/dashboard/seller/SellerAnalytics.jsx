@@ -20,6 +20,7 @@ import {
   Bar
 } from 'recharts';
 import { useOrder } from '../../../hooks/useOrder';
+import { formatPrice, formatNumber } from '../../../lib/utils';
 import { motion } from 'framer-motion';
 
 const SellerAnalytics = () => {
@@ -64,7 +65,7 @@ const SellerAnalytics = () => {
             </span>
           </div>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Total Revenue</p>
-          <h3 className="text-3xl font-bold text-slate-900 mt-1">ETB {analytics?.revenue?.toLocaleString() || '0.00'}</h3>
+          <h3 className="text-3xl font-bold text-slate-900 mt-1">{formatPrice(analytics?.revenue || 0)}</h3>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
@@ -78,7 +79,7 @@ const SellerAnalytics = () => {
             </span>
           </div>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Sales Velocity</p>
-          <h3 className="text-3xl font-bold text-slate-900 mt-1">{analytics?.orders || 0} Orders</h3>
+          <h3 className="text-3xl font-bold text-slate-900 mt-1">{formatNumber(analytics?.orders || 0)} Orders</h3>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
@@ -89,7 +90,7 @@ const SellerAnalytics = () => {
           </div>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Average Order Value</p>
           <h3 className="text-3xl font-bold text-slate-900 mt-1">
-            ETB {analytics?.orders > 0 ? (analytics.revenue / analytics.orders).toFixed(0).toLocaleString() : '0'}
+            {analytics?.orders > 0 ? formatPrice(analytics.revenue / analytics.orders) : formatPrice(0)}
           </h3>
         </div>
       </div>

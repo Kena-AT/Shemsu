@@ -18,6 +18,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useProducts } from '../../hooks/useProducts';
 import { useCategories } from '../../hooks/useCategories';
+import { formatPrice } from '../../lib/utils';
 import Footer from '../../components/layout/Footer';
 
 const CategoryPage = () => {
@@ -28,7 +29,7 @@ const CategoryPage = () => {
   const { useGetCategories } = useCategories();
   
   const [activeTab, setActiveTab] = useState('All');
-  const [priceRange, setPriceRange] = useState(5000);
+  const [priceRange, setPriceRange] = useState(1000000);
   
   const { data: categories } = useGetCategories();
   const { data: productsData, isLoading } = useGetProducts({ 
@@ -104,7 +105,7 @@ const CategoryPage = () => {
               <h3 className="font-bold">Filters</h3>
               <button 
                 onClick={() => {
-                  setPriceRange(5000);
+                  setPriceRange(1000000);
                   setActiveTab('All');
                 }}
                 className="text-xs text-blue-600 font-medium"
@@ -120,16 +121,17 @@ const CategoryPage = () => {
                 </h4>
                 <div className="flex items-center gap-2 mb-4">
                   <div className="flex-1 bg-slate-50 border border-slate-200 rounded p-2 text-xs">
-                    <span className="text-slate-400">ETB</span> 0
+                    {formatPrice(0)}
                   </div>
                   <div className="flex-1 bg-slate-50 border border-slate-200 rounded p-2 text-xs">
-                    <span className="text-slate-400">ETB</span> {priceRange}
+                    {formatPrice(priceRange)}
                   </div>
                 </div>
                 <input 
                   type="range" 
                   min="0"
-                  max="5000"
+                  max="1000000"
+                  step="1000"
                   value={priceRange}
                   onChange={(e) => setPriceRange(Number(e.target.value))}
                   className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" 
@@ -214,8 +216,8 @@ const CategoryPage = () => {
                     <h3 className="font-bold text-lg mb-1 group-hover:text-blue-600 transition-colors line-clamp-1">{p.name}</h3>
                     <p className="text-xs text-slate-500 mb-3 line-clamp-1">{p.description || 'Premium quality guaranteed.'}</p>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-xl font-black">ETB {parseFloat(p.price).toFixed(2)}</span>
-                      <span className="text-sm text-slate-400 line-through">ETB {(parseFloat(p.price) * 1.2).toFixed(2)}</span>
+                      <span className="text-xl font-black">{formatPrice(parseFloat(p.price))}</span>
+                      <span className="text-sm text-slate-400 line-through">{formatPrice(parseFloat(p.price) * 1.2)}</span>
                     </div>
                   </motion.div>
                 ))}

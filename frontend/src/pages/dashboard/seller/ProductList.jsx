@@ -21,6 +21,7 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import SellerSidebar from '../../../components/layout/SellerSidebar';
 import { useProducts } from '../../../hooks/useProducts';
+import { formatPrice, formatNumber } from '../../../lib/utils';
 import { exportToCSV } from '../../../lib/exportUtils';
 import { toast } from 'react-hot-toast';
 
@@ -218,7 +219,7 @@ const ProductList = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600">{product.category?.name || '—'}</td>
-                      <td className="px-6 py-4 text-sm font-bold text-slate-900">ETB {parseFloat(product.price).toFixed(2)}</td>
+                      <td className="px-6 py-4 text-sm font-bold text-slate-900">{formatPrice(parseFloat(product.price))}</td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                           <span className={`text-sm font-bold ${product.stock < 10 ? 'text-amber-600' : 'text-slate-900'}`}>{product.stock}</span>
@@ -280,7 +281,7 @@ const ProductList = () => {
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
               <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">Active Products</p>
-              <h3 className="text-3xl font-bold text-slate-900">{activeCount}</h3>
+              <h3 className="text-3xl font-bold text-slate-900">{formatNumber(activeCount)}</h3>
             </div>
             <div className="p-3 bg-blue-50 rounded-xl text-blue-600">
               <CheckCircle2 className="w-6 h-6" />
@@ -289,7 +290,7 @@ const ProductList = () => {
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Drafts</p>
-              <h3 className="text-3xl font-bold text-slate-900">{draftCount}</h3>
+              <h3 className="text-3xl font-bold text-slate-900">{formatNumber(draftCount)}</h3>
             </div>
             <div className="p-3 bg-slate-50 rounded-xl text-slate-400">
               <FileText className="w-6 h-6" />
@@ -298,7 +299,7 @@ const ProductList = () => {
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
               <p className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-1">Low Stock</p>
-              <h3 className="text-3xl font-bold text-slate-900">{lowStockCount}</h3>
+              <h3 className="text-3xl font-bold text-slate-900">{formatNumber(lowStockCount)}</h3>
             </div>
             <div className="p-3 bg-amber-50 rounded-xl text-amber-600">
               <AlertTriangle className="w-6 h-6" />

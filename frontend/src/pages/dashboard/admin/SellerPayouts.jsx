@@ -18,6 +18,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../../../components/common/Button';
 import { useAdmin } from '../../../hooks/useAdmin';
+import { formatPrice, formatNumber } from '../../../lib/utils';
 
 const SellerPayouts = () => {
   const { useGetPayouts, processPayout } = useAdmin();
@@ -30,19 +31,19 @@ const SellerPayouts = () => {
   const payoutStats = [
     { 
       label: 'Total Payouts', 
-      value: `ETB ${payoutData?.stats?.totalPayouts?.toLocaleString() || '0'}`, 
+      value: formatPrice(payoutData?.stats?.totalPayouts || 0), 
       change: '+12.5% vs last month', 
       icon: CreditCard, color: 'text-blue-600', bg: 'bg-blue-50' 
     },
     { 
       label: 'Pending Balance', 
-      value: `ETB ${payoutData?.stats?.pendingAmount?.toLocaleString() || '0'}`, 
-      sub: `${payoutData?.stats?.pendingCount || 0} transactions awaiting approval`, 
+      value: formatPrice(payoutData?.stats?.pendingAmount || 0), 
+      sub: `${formatNumber(payoutData?.stats?.pendingCount || 0)} transactions awaiting approval`, 
       icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' 
     },
     { 
       label: 'Seller Balances', 
-      value: `${payoutData?.balances?.length || 0} Sellers`, 
+      value: `${formatNumber(payoutData?.balances?.length || 0)} Sellers`, 
       sub: 'Total with positive balance', 
       icon: Calendar, color: 'text-emerald-600', bg: 'bg-emerald-50' 
     },
@@ -58,7 +59,7 @@ const SellerPayouts = () => {
 
   const handleProcessPayout = async (payout) => {
     try {
-      if (window.confirm(`Process payout of ETB ${payout.balance} to ${payout.seller_name}?`)) {
+      if (window.confirm(`Process payout of ${formatPrice(payout.balance)} to ${payout.seller_name}?`)) {
         await processPayout.mutateAsync({
           sellerId: payout.seller_id,
           amount: payout.balance,
@@ -162,13 +163,13 @@ const SellerPayouts = () => {
                   </div>
                 </td>
                 <td className="px-6 py-6 text-center text-[10px] font-bold text-slate-500 uppercase">
-                  ETB {parseFloat(b.total_earned).toLocaleString()}
+                  {formatPrice(parseFloat(b.total_earned))}
                 </td>
                 <td className="px-6 py-6 text-center text-[10px] font-bold text-slate-500 uppercase">
-                  ETB {parseFloat(b.total_paid).toLocaleString()}
+                  {formatPrice(parseFloat(b.total_paid))}
                 </td>
                 <td className="px-6 py-6 text-center text-xs font-black text-emerald-600 italic">
-                  ETB {parseFloat(b.balance).toLocaleString()}
+                  {formatPrice(parseFloat(b.balance))}
                 </td>
                 <td className="px-8 py-6 text-right">
                   <button 
@@ -214,7 +215,7 @@ const SellerPayouts = () => {
                   {p.seller}
                 </td>
                 <td className="px-6 py-4 text-center text-xs font-black text-slate-900">
-                  {p.amount}
+                  {formatPrice(parseFloat(p.amount))}
                 </td>
                 <td className="px-6 py-4 text-center text-[10px] font-bold text-slate-400 uppercase">
                   {p.date}

@@ -20,6 +20,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useProducts } from '../../hooks/useProducts';
 import { useCart } from '../../hooks/useCart';
+import { formatPrice, formatNumber } from '../../lib/utils';
 import Footer from '../../components/layout/Footer';
 import ReviewSection from '../../components/marketplace/ReviewSection';
 
@@ -143,7 +144,7 @@ const ProductDetails = () => {
                   className="text-sm text-slate-500 font-medium underline cursor-pointer"
                   onClick={() => setActiveTab('Reviews')}
                 >
-                  {product.reviewCount || 0} reviews
+                  {formatNumber(product.reviewCount || 0)} reviews
                 </span>
                 <span className="text-slate-300">|</span>
                 <span className="text-sm text-emerald-600 font-bold">{product.stock > 0 ? 'In Stock' : 'Out of Stock'}</span>
@@ -152,11 +153,11 @@ const ProductDetails = () => {
 
             <div className="mb-8 p-6 bg-slate-50 rounded-2xl border border-slate-100">
               <div className="flex items-baseline gap-3 mb-1">
-                <span className="text-4xl font-black text-slate-900">ETB {parseFloat(product.price).toFixed(2)}</span>
-                <span className="text-lg text-slate-400 line-through">ETB {(parseFloat(product.price) * 1.2).toFixed(2)}</span>
+                <span className="text-4xl font-black text-slate-900">{formatPrice(parseFloat(product.price))}</span>
+                <span className="text-lg text-slate-400 line-through">{formatPrice(parseFloat(product.price) * 1.2)}</span>
                 <span className="text-sm font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded">SAVE 20%</span>
               </div>
-              <p className="text-xs text-slate-500">Free shipping on orders over ETB 500</p>
+              <p className="text-xs text-slate-500">Free shipping on orders over {formatPrice(500)}</p>
             </div>
 
             <div className="space-y-8 mb-10">
@@ -325,7 +326,7 @@ const ProductDetails = () => {
                 </div>
                 <h3 className="font-bold text-sm mb-1 group-hover:text-blue-600 transition-colors line-clamp-1">{p.name}</h3>
                 <div className="flex items-center justify-between mt-4">
-                  <span className="font-black text-lg">ETB {parseFloat(p.price).toFixed(2)}</span>
+                  <span className="font-black text-lg">{formatPrice(parseFloat(p.price))}</span>
                   <button className="p-2 bg-slate-50 rounded-lg hover:bg-blue-600 hover:text-white transition-all">
                     <ShoppingCart className="w-4 h-4" />
                   </button>

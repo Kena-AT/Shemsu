@@ -2,6 +2,7 @@ import React from 'react';
 import { useOrder } from '../../hooks/useOrder';
 import { ShoppingBag, Package, Truck, CheckCircle, XCircle, AlertCircle, ChevronRight, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { formatPrice, formatNumber } from '../../lib/utils';
 
 const OrderHistory = () => {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ const OrderHistory = () => {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
           <div className="bg-blue-100 text-blue-600 px-4 py-1.5 rounded-full text-sm font-semibold">
-            {orders?.length || 0} Orders Total
+            {formatNumber(orders?.length || 0)} Orders Total
           </div>
         </div>
 
@@ -74,7 +75,7 @@ const OrderHistory = () => {
                       <span className="font-bold text-gray-800">{getStatusLabel(order.status)}</span>
                     </div>
                     <p className="text-2xl font-black text-blue-600">
-                      ETB {parseFloat(order.totalAmount).toLocaleString()}
+                      {formatPrice(parseFloat(order.totalAmount))}
                     </p>
                   </div>
                 </div>
@@ -96,7 +97,7 @@ const OrderHistory = () => {
                           <div className="flex items-center text-sm text-gray-500 gap-3 mt-0.5">
                             <span>Qty: {item.quantity}</span>
                             <span>•</span>
-                            <span>ETB {parseFloat(item.priceAtPurchase).toLocaleString()}</span>
+                            <span>{formatPrice(parseFloat(item.priceAtPurchase))}</span>
                           </div>
                         </div>
                       </div>

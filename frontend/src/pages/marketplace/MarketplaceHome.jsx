@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useCategories } from '../../hooks/useCategories';
 import { useProducts } from '../../hooks/useProducts';
+import { formatPrice, formatNumber } from '../../lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Search, 
@@ -204,10 +205,10 @@ const MarketplaceHome = () => {
                   <div className="flex items-center gap-1 mb-2">
                     <Star className={`w-3 h-3 ${product.rating > 0 ? 'fill-yellow-400 text-yellow-400' : 'text-slate-200'}`} />
                     <span className="text-xs font-medium">{Number(product.rating || 0).toFixed(1)}</span>
-                    <span className="text-xs text-slate-400">({product.reviewCount || 0} reviews)</span>
+                    <span className="text-xs text-slate-400">({formatNumber(product.reviewCount || 0)} reviews)</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-lg text-slate-900">ETB {parseFloat(product.price).toFixed(2)}</span>
+                    <span className="font-bold text-lg text-slate-900">{formatPrice(parseFloat(product.price))}</span>
                     <button className="p-2 bg-slate-50 hover:bg-blue-600 hover:text-white rounded-lg transition-all">
                       <ShoppingCart className="w-4 h-4" />
                     </button>
