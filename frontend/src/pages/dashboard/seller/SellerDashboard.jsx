@@ -87,7 +87,7 @@ const SellerDashboard = () => {
               <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
             <Link 
-              to="/seller/products/new" 
+              to="/seller/products/add" 
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm shadow-blue-200"
             >
               <Plus className="w-4 h-4" />

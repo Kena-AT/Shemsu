@@ -114,7 +114,7 @@ const ProductList = () => {
               <span>Export Inventory</span>
             </button>
             <Link 
-              to="/seller/products/new" 
+              to="/seller/products/add" 
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm shadow-blue-200"
             >
               <Plus className="w-4 h-4" />
