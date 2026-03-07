@@ -105,8 +105,8 @@ const ProductModeration = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
           { label: 'Total Pending', value: stats?.pendingModeration || '0', change: 'Marketplace Depth', icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'High-Risk Flags', value: '18', change: 'Safety First', icon: AlertTriangle, color: 'text-rose-600', bg: 'bg-rose-50' },
-          { label: 'Approved Today', value: '452', change: 'Velocity', icon: Package, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+          { label: 'High-Risk Flags', value: stats?.highRiskFlags || '0', change: 'Safety First', icon: AlertTriangle, color: 'text-rose-600', bg: 'bg-rose-50' },
+          { label: 'Approved Today', value: stats?.approvedToday || '0', change: 'Velocity', icon: Package, color: 'text-emerald-600', bg: 'bg-emerald-50' },
         ].map((stat, i) => (
           <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between mb-2">

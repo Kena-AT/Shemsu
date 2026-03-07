@@ -25,4 +25,10 @@ router.get('/verification-status', sellerController.getVerificationStatus);
  */
 router.post('/verify', sellerController.submitVerification);
 
+/**
+ * @route PATCH /api/seller/profile
+ * @desc Update seller profile information
+ */
+router.patch('/profile', sellerController.updateProfile);
+
 module.exports = router;

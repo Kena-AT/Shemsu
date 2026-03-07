@@ -38,7 +38,10 @@ const SecurityMiddleware = () => {
   const handleSave = (e) => {
     e.preventDefault();
     const reason = window.prompt('Security settings update requires a justification for audit logs:');
-    if (!reason) return;
+    if (!reason) {
+      toast.error('Policy deployment aborted: Justification is required for security audits.');
+      return;
+    }
 
     updateSettings.mutate({ settings: formData, reason }, {
       onSuccess: () => toast.success('Security policy updated and applied to backend.'),

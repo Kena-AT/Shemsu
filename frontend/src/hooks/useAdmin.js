@@ -14,6 +14,24 @@ export const useAdmin = () => {
     refetchInterval: 60000, // Refresh every minute
   });
 
+  // Analytics
+  const useGetAnalytics = () => useQuery({
+    queryKey: ['admin-analytics'],
+    queryFn: async () => {
+      const { data } = await api.get('/admin/detailed-analytics');
+      return data;
+    }
+  });
+
+  // Payouts
+  const useGetPayouts = () => useQuery({
+    queryKey: ['admin-payouts'],
+    queryFn: async () => {
+      const { data } = await api.get('/admin/payouts');
+      return data;
+    }
+  });
+
   // Products
   const useGetProductById = (id) => useQuery({
     queryKey: ['admin-product', id],
@@ -134,13 +152,16 @@ export const useAdmin = () => {
   });
 
   const updateSettings = useMutation({
-    mutationFn: (settingsData) => {
-      // If settingsData is an object, we might need to send multiple requests or update the API to handle bulk
-      // But currently controller handles one key at a time. 
-      // Let's assume the frontend sends { key, value, reason }
-      return api.patch('/admin/settings', settingsData);
-    },
+    mutationFn: (settingsData) => api.patch('/admin/settings', settingsData),
     onSuccess: () => queryClient.invalidateQueries(['admin-settings'])
+  });
+
+  const processPayout = useMutation({
+    mutationFn: (payoutData) => api.post('/admin/payouts/process', payoutData),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['admin-payouts']);
+      queryClient.invalidateQueries(['admin-stats']);
+    }
   });
 
   return {
@@ -155,11 +176,14 @@ export const useAdmin = () => {
     useGetOrderDetails,
     useGetSettings,
     useGetAuditLogs,
+    useGetAnalytics,
+    useGetPayouts,
     updateStatus,
     verifySeller,
     moderateProduct,
     updateProductStatus: moderateProduct, // Alias for component consistency
     overrideOrderStatus,
-    updateSettings
+    updateSettings,
+    processPayout
   };
 };

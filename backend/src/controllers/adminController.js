@@ -7,7 +7,9 @@ const {
   sellerVerifications, 
   productReports, 
   auditLogs, 
-  systemSettings 
+  systemSettings,
+  categories,
+  payouts
 } = require('../models/schema');
 const { eq, and, ne, sql, desc, ilike, inArray } = require('drizzle-orm');
 const auditLogger = require('../services/auditLogger');
@@ -168,12 +170,37 @@ class AdminController {
       .orderBy(desc(auditLogs.createdAt))
       .limit(5);
 
+      // 8. Total Active Sellers
+      const sellersResult = await db.execute(sql`
+        SELECT COUNT(*) as total_sellers
+        FROM users
+        WHERE role = 'seller' AND is_deleted = false AND status = 'active'
+      `);
+
+      // 9. High-Risk Flags (Products with pending reports)
+      const highRiskResult = await db.execute(sql`
+        SELECT COUNT(DISTINCT product_id) as high_risk_flags
+        FROM product_reports
+        WHERE status = 'pending'
+      `);
+
+      // 10. Approved Today (Approvals in last 24h from audit logs)
+      const approvedResult = await db.execute(sql`
+        SELECT COUNT(*) as approved_today
+        FROM audit_logs
+        WHERE action = 'APPROVE_PRODUCT' 
+        AND created_at > NOW() - INTERVAL '24 hours'
+      `);
+
       res.json({
         totalRevenue: parseFloat(revenueResult.rows[0].total_revenue),
         totalUsers: parseInt(usersResult.rows[0].total_users),
         totalProducts: parseInt(productsResult.rows[0].total_products),
+        totalSellers: parseInt(sellersResult.rows[0].total_sellers),
         pendingVerifications: parseInt(verificationsResult.rows[0].pending_verifications),
         pendingModeration: parseInt(moderationResult.rows[0].pending_moderation),
+        highRiskFlags: parseInt(highRiskResult.rows[0].high_risk_flags),
+        approvedToday: parseInt(approvedResult.rows[0].approved_today),
         recentVerifications,
         recentActivity: recentActivity.map(a => ({
           ...a,
@@ -407,8 +434,21 @@ class AdminController {
       if (!product) return res.status(404).json({ message: 'Product not found' });
 
       const reports = await db.select().from(productReports).where(eq(productReports.productId, id));
+      
+      // Fetch Product Audit History
+      const history = await db.select({
+        id: auditLogs.id,
+        action: auditLogs.action,
+        reason: auditLogs.reason,
+        adminName: users.fullName,
+        createdAt: auditLogs.createdAt
+      })
+      .from(auditLogs)
+      .innerJoin(users, eq(auditLogs.adminId, users.id))
+      .where(and(eq(auditLogs.targetType, 'product'), eq(auditLogs.targetId, id)))
+      .orderBy(desc(auditLogs.createdAt));
 
-      res.json({ product, reports });
+      res.json({ product, reports, history });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -597,7 +637,12 @@ class AdminController {
         return res.status(400).json({ message: 'Invalid settings format' });
       }
 
-      const whitelist = ['maintenanceMode', 'commissionRate', 'supportEmail', 'maxUploadSizeKB', 'platformName', 'timezone', 'minPayout', 'notifications', 'maxLoginAttempts', 'maintenanceMessage'];
+      const whitelist = [
+        'maintenanceMode', 'commissionRate', 'supportEmail', 'maxUploadSizeKB', 
+        'platformName', 'timezone', 'minPayout', 'notifications', 
+        'maxLoginAttempts', 'maintenanceMessage',
+        'apiGlobalRequestLimit', 'enableCSP', 'enableHSTS', 'enableFrameguard', 'enableReferrerPolicy', 'lockdownMode'
+      ];
       
       const results = [];
       for (const [key, value] of Object.entries(settings)) {
@@ -669,6 +714,204 @@ class AdminController {
       res.json(logs);
     } catch (error) {
       res.status(500).json({ message: error.message });
+    }
+  }
+
+  /**
+   * Detailed Financial Analytics for Admin
+   */
+  async getAnalytics(req, res) {
+    try {
+      // 1. Revenue Trends (Last 30 Days)
+      const revenueTrends = await db.execute(sql`
+        SELECT 
+          DATE(paid_at) as day,
+          SUM(total_amount)::numeric as value
+        FROM orders
+        WHERE payment_status = 'paid' AND paid_at > NOW() - INTERVAL '30 days'
+        GROUP BY DATE(paid_at)
+        ORDER BY DATE(paid_at) ASC
+      `);
+
+      // 2. Category Distribution
+      const categoryDistribution = await db.execute(sql`
+        SELECT 
+          c.name,
+          COUNT(oi.id) as volume,
+          SUM(oi.price_at_purchase::numeric * oi.quantity) as revenue
+        FROM order_items oi
+        JOIN products p ON oi.product_id = p.id
+        JOIN categories c ON p.category_id = c.id
+        JOIN orders o ON oi.order_id = o.id
+        WHERE o.payment_status = 'paid'
+        GROUP BY c.name
+      `);
+
+      // Calculate percentages for categories
+      const totalVolume = categoryDistribution.rows.reduce((acc, curr) => acc + parseInt(curr.volume), 0);
+      const topCategories = categoryDistribution.rows.map(c => ({
+        name: c.name,
+        value: totalVolume > 0 ? Math.round((parseInt(c.volume) / totalVolume) * 100) : 0,
+        color: '#' + Math.floor(Math.random()*16777215).toString(16) // Randomish colors for new categories
+      })).sort((a, b) => b.value - a.value).slice(0, 5);
+
+      // 3. Top Performers (Sellers)
+      const topSellers = await db.execute(sql`
+        SELECT 
+          u.full_name as name,
+          u.id as seller_id,
+          SUM(oi.price_at_purchase::numeric * oi.quantity) as sales_volume,
+          COUNT(oi.id) as orders_count
+        FROM order_items oi
+        JOIN users u ON oi.seller_id = u.id
+        JOIN orders o ON oi.order_id = o.id
+        WHERE o.payment_status = 'paid'
+        GROUP BY u.id, u.full_name
+        ORDER BY sales_volume DESC
+        LIMIT 5
+      `);
+
+      res.json({
+        revenueData: revenueTrends.rows.map(r => ({
+          day: new Date(r.day).toLocaleDateString([], { weekday: 'short' }),
+          value: parseFloat(r.value)
+        })),
+        categoryData: topCategories,
+        topPerformers: topSellers.rows.map(s => ({
+          name: s.name,
+          sub: `${s.orders_count} Orders`,
+          cat: 'Seller',
+          vol: `ETB ${parseFloat(s.sales_volume).toLocaleString()}`,
+          status: parseFloat(s.sales_volume) > 10000 ? 'TOP PERFORMER' : 'TRENDING',
+          color: 'emerald'
+        }))
+      });
+    } catch (error) {
+      logger.error(`getAnalytics error: ${error.message}`);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  /**
+   * Get Payouts List and Summaries
+   */
+  async getPayouts(req, res) {
+    try {
+      // 1. Calculate Earnings vs Paid per Seller
+      const balances = await db.execute(sql`
+        WITH seller_earnings AS (
+          SELECT 
+            oi.seller_id,
+            u.full_name as seller_name,
+            u.email as seller_email,
+            SUM(oi.price_at_purchase::numeric * oi.quantity) as total_earned
+          FROM order_items oi
+          JOIN users u ON oi.seller_id = u.id
+          JOIN orders o ON oi.order_id = o.id
+          WHERE o.payment_status = 'paid'
+          GROUP BY oi.seller_id, u.full_name, u.email
+        ),
+        seller_paid AS (
+          SELECT 
+            seller_id,
+            SUM(amount::numeric) as total_paid
+          FROM payouts
+          WHERE status = 'completed'
+          GROUP BY seller_id
+        )
+        SELECT 
+          e.seller_id,
+          e.seller_name,
+          e.total_earned,
+          COALESCE(p.total_paid, 0) as total_paid,
+          (e.total_earned - COALESCE(p.total_paid, 0)) as balance
+        FROM seller_earnings e
+        LEFT JOIN seller_paid p ON e.seller_id = p.seller_id
+      `);
+
+      // 2. Get Recent Payout History
+      const history = await db.select({
+        id: payouts.id,
+        seller: users.fullName,
+        amount: payouts.amount,
+        status: payouts.status,
+        date: payouts.createdAt,
+        txRef: payouts.txRef
+      })
+      .from(payouts)
+      .innerJoin(users, eq(payouts.sellerId, users.id))
+      .orderBy(desc(payouts.createdAt))
+      .limit(50);
+
+      // 3. Global Stats
+      const stats = await db.execute(sql`
+        SELECT 
+          SUM(amount::numeric) FILTER (WHERE status = 'completed') as total_payouts,
+          COUNT(*) FILTER (WHERE status = 'pending') as pending_count,
+          SUM(amount::numeric) FILTER (WHERE status = 'pending') as pending_amount
+        FROM payouts
+      `);
+
+      res.json({
+        balances: balances.rows,
+        history: history.map(h => ({
+          ...h,
+          amount: `ETB ${parseFloat(h.amount).toLocaleString()}`,
+          date: new Date(h.date).toLocaleDateString()
+        })),
+        stats: {
+          totalPayouts: parseFloat(stats.rows[0].total_payouts || 0),
+          pendingCount: parseInt(stats.rows[0].pending_count || 0),
+          pendingAmount: parseFloat(stats.rows[0].pending_amount || 0)
+        }
+      });
+    } catch (error) {
+      logger.error(`getPayouts error: ${error.message}`);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  /**
+   * Process a Payout (Mark as Completed)
+   */
+  async processPayout(req, res) {
+    try {
+      const { sellerId, amount, txRef, reason } = req.body;
+
+      if (!sellerId || !amount || !txRef) {
+        return res.status(400).json({ message: 'Missing required payout fields' });
+      }
+
+      // Record the payout
+      const [payout] = await db.insert(payouts)
+        .values({
+          sellerId,
+          amount: amount.toString(),
+          status: 'completed',
+          txRef,
+          bankDetailsSnapshot: {}, // In a real app, fetch and snapshot the current bank details
+          updatedAt: new Date()
+        })
+        .returning();
+
+      // Audit Log
+      await auditLogger.logAction({
+        adminId: req.user.id,
+        action: 'PROCESS_PAYOUT',
+        targetType: 'payout',
+        targetId: payout.id,
+        newValue: payout,
+        reason,
+        req
+      });
+
+      res.json({ message: 'Payout processed successfully', payout });
+    } catch (error) {
+      if (error.code === '23505') {
+        return res.status(400).json({ message: 'Transaction reference must be unique' });
+      }
+      logger.error(`processPayout error: ${error.message}`);
+      res.status(500).json({ message: 'Internal server error' });
     }
   }
 }

@@ -418,7 +418,7 @@ const AddEditProduct = () => {
         
         <footer className="pt-8 pb-4 text-center">
           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-            <span>© 2024 Shemsu Seller Dashboard</span>
+            <span>© 2026 Shemsu Seller Dashboard</span>
             <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
             <span>All rights reserved</span>
             <span className="w-1 h-1 bg-slate-200 rounded-full"></span>

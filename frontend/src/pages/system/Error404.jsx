@@ -1,17 +1,27 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, MapPin, ArrowRight, LifeBuoy, Ghost } from 'lucide-react';
+import { useAuthStore } from '../../state/useAuthStore';
 import Button from '../../components/common/Button';
 
 const Error404 = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
 
+  const { isAuthenticated, user } = useAuthStore();
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (search.trim()) {
       navigate(`/app/marketplace/search?search=${encodeURIComponent(search)}`);
     }
+  };
+
+  const getHomeRoute = () => {
+    if (!isAuthenticated) return '/';
+    if (user?.role === 'admin') return '/admin';
+    if (user?.role === 'seller') return '/seller';
+    return '/app';
   };
 
   return (
@@ -45,7 +55,7 @@ const Error404 = () => {
         </form>
 
         <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-          <Button onClick={() => navigate('/')} variant="primary" className="px-8">
+          <Button onClick={() => navigate(getHomeRoute())} variant="primary" className="px-8">
             Return Home
           </Button>
           <Button onClick={() => navigate('/app/contact')} variant="outline" className="px-8">

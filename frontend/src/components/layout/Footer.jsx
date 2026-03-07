@@ -40,7 +40,7 @@ const Footer = ({ showCompany = true }) => {
           <div>
             <h4 className="font-bold text-slate-900 mb-6 uppercase text-xs tracking-widest">Marketplace</h4>
             <ul className="space-y-4">
-              <li><Link to="/app/about" className="text-slate-500 text-sm hover:text-blue-600 transition-colors">About Us</Link></li>
+              <li><Link to="/" className="text-slate-500 text-sm hover:text-blue-600 transition-colors">About Us</Link></li>
               <li><Link to="/app/marketplace" className="text-slate-500 text-sm hover:text-blue-600 transition-colors">All Categories</Link></li>
               <li><Link to="/app/marketplace" className="text-slate-500 text-sm hover:text-blue-600 transition-colors">Trending Products</Link></li>
             </ul>

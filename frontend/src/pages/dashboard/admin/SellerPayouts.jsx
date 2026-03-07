@@ -17,29 +17,58 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../../../components/common/Button';
+import { useAdmin } from '../../../hooks/useAdmin';
 
 const SellerPayouts = () => {
+  const { useGetPayouts, processPayout } = useAdmin();
+  const { data: payoutData, isLoading } = useGetPayouts();
+
   const [selectedPayouts, setSelectedPayouts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
 
   const payoutStats = [
-    { label: 'Total Payouts', value: '$1,284,450.00', change: '+12.5% vs last month', icon: CreditCard, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Pending Payouts', value: '$12,300.50', sub: '14 transactions awaiting approval', icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: 'Next Scheduled Payout', value: 'Oct 25, 2023', sub: 'Scheduled in 3 days', icon: Calendar, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { 
+      label: 'Total Payouts', 
+      value: `ETB ${payoutData?.stats?.totalPayouts?.toLocaleString() || '0'}`, 
+      change: '+12.5% vs last month', 
+      icon: CreditCard, color: 'text-blue-600', bg: 'bg-blue-50' 
+    },
+    { 
+      label: 'Pending Balance', 
+      value: `ETB ${payoutData?.stats?.pendingAmount?.toLocaleString() || '0'}`, 
+      sub: `${payoutData?.stats?.pendingCount || 0} transactions awaiting approval`, 
+      icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' 
+    },
+    { 
+      label: 'Seller Balances', 
+      value: `${payoutData?.balances?.length || 0} Sellers`, 
+      sub: 'Total with positive balance', 
+      icon: Calendar, color: 'text-emerald-600', bg: 'bg-emerald-50' 
+    },
   ];
 
-  const payouts = [
-    { id: 'PAY-882190', seller: 'Artisan Makers Ltd.', bank: 'Chase **** 9901', amount: '$4,500.00', date: 'Oct 22, 2023', status: 'Completed', logo: 'AM' },
-    { id: 'PAY-882191', seller: 'Green Horizon', bank: 'BofA **** 4412', amount: '$1,250.75', date: 'Oct 23, 2023', status: 'Pending', logo: 'GH' },
-    { id: 'PAY-882192', seller: 'Urban Threads', bank: 'Wells **** 1019', amount: '$840.00', date: 'Oct 23, 2023', status: 'Failed', logo: 'UT' },
-    { id: 'PAY-882193', seller: 'Silk & Velvet', bank: 'Citi **** 0056', amount: '$2,105.20', date: 'Oct 24, 2023', status: 'Pending', logo: 'SV' },
-  ];
+  const history = payoutData?.history || [];
 
   const toggleSelect = (id) => {
     setSelectedPayouts(prev => 
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
+  };
+
+  const handleProcessPayout = async (payout) => {
+    try {
+      if (window.confirm(`Process payout of ETB ${payout.balance} to ${payout.seller_name}?`)) {
+        await processPayout.mutateAsync({
+          sellerId: payout.seller_id,
+          amount: payout.balance,
+          txRef: `PAY-${Date.now()}-${payout.seller_id.slice(0, 4)}`,
+          reason: 'Scheduled seller payout'
+        });
+      }
+    } catch (error) {
+       // Error handled by mutation
+    }
   };
 
   const getStatusStyle = (status) => {
@@ -108,76 +137,102 @@ const SellerPayouts = () => {
 
       {/* Payouts Table */}
       <div className="bg-white rounded-[40px] border border-slate-200 shadow-sm overflow-hidden relative">
+        <div className="flex items-center justify-between px-8 py-5 bg-slate-50/50 border-b border-slate-100">
+          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Available Balances for Payout</h4>
+        </div>
         <table className="w-full text-left">
           <thead>
-            <tr className="bg-slate-50/50 border-b border-slate-100">
-              <th className="px-8 py-5 w-10 text-center">
-                <input 
-                  type="checkbox" 
-                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                  onChange={(e) => {
-                    if (e.target.checked) setSelectedPayouts(payouts.map(p => p.id));
-                    else setSelectedPayouts([]);
-                  }}
-                  checked={selectedPayouts.length === payouts.length && payouts.length > 0}
-                />
-              </th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Payout ID</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Seller</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Bank Account</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Amount</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Date</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
-              <th className="px-8 py-5 w-10"></th>
+            <tr className="bg-white border-b border-slate-50">
+              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Seller</th>
+              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Total Earned</th>
+              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Total Paid</th>
+              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Available Balance</th>
+              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-            {payouts.map((p, i) => (
-              <tr 
-                key={p.id} 
-                className={`hover:bg-slate-50/50 transition-colors group ${selectedPayouts.includes(p.id) ? 'bg-blue-50/30' : ''}`}
-                onClick={() => toggleSelect(p.id)}
-              >
-                <td className="px-8 py-6 w-10 text-center" onClick={(e) => e.stopPropagation()}>
-                  <input 
-                    type="checkbox" 
-                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                    checked={selectedPayouts.includes(p.id)}
-                    onChange={() => toggleSelect(p.id)}
-                  />
-                </td>
-                <td className="px-6 py-6 text-[11px] font-black text-blue-600 italic tracking-tighter">
-                  {p.id}
-                </td>
-                <td className="px-6 py-6">
+            {payoutData?.balances?.filter(b => parseFloat(b.balance) > 0).map((b, i) => (
+              <tr key={b.seller_id} className="hover:bg-slate-50/50 transition-colors group">
+                <td className="px-8 py-6">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-200 uppercase tracking-wider">
-                      {p.logo}
+                      {b.seller_name.slice(0, 2).toUpperCase()}
                     </div>
-                    <span className="text-xs font-black text-slate-900 uppercase tracking-tight">{p.seller}</span>
+                    <span className="text-xs font-black text-slate-900 uppercase tracking-tight">{b.seller_name}</span>
                   </div>
                 </td>
-                <td className="px-6 py-6 text-center">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{p.bank}</span>
+                <td className="px-6 py-6 text-center text-[10px] font-bold text-slate-500 uppercase">
+                  ETB {parseFloat(b.total_earned).toLocaleString()}
                 </td>
-                <td className="px-6 py-6 text-center text-xs font-black text-slate-900 italic">
-                  {p.amount}
+                <td className="px-6 py-6 text-center text-[10px] font-bold text-slate-500 uppercase">
+                  ETB {parseFloat(b.total_paid).toLocaleString()}
                 </td>
-                <td className="px-6 py-6 text-center text-[10px] font-bold text-slate-400 uppercase">
-                  {p.date}
+                <td className="px-6 py-6 text-center text-xs font-black text-emerald-600 italic">
+                  ETB {parseFloat(b.balance).toLocaleString()}
                 </td>
-                <td className="px-6 py-6 text-center">
-                  <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusStyle(p.status)}`}>
-                    {p.status}
-                  </span>
-                </td>
-                <td className="px-8 py-6 w-10 text-right">
-                  <button className="p-2 text-slate-300 hover:text-slate-600 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-100 group-hover:bg-white group-hover:shadow-sm">
-                    <MoreHorizontal size={16} />
+                <td className="px-8 py-6 text-right">
+                  <button 
+                    onClick={() => handleProcessPayout(b)}
+                    disabled={processPayout.isLoading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-md shadow-blue-100"
+                  >
+                    Approving Payout
                   </button>
                 </td>
               </tr>
             ))}
+            {(!payoutData?.balances || payoutData.balances.filter(b => parseFloat(b.balance) > 0).length === 0) && (
+              <tr>
+                <td colSpan="5" className="px-8 py-10 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">
+                  No pending balances to payout
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+
+        <div className="mt-8 flex items-center justify-between px-8 py-5 bg-slate-50/50 border-y border-slate-100">
+          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recent Payout History</h4>
+        </div>
+        <table className="w-full text-left">
+          <thead>
+            <tr className="bg-white border-b border-slate-50">
+              <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Payout ID (Ref)</th>
+              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Seller</th>
+              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Amount</th>
+              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Date</th>
+              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-50">
+            {history.map((p) => (
+              <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
+                <td className="px-8 py-4 text-[11px] font-black text-blue-600 italic tracking-tighter">
+                  {p.txRef}
+                </td>
+                <td className="px-6 py-4 text-xs font-black text-slate-900 uppercase tracking-tight">
+                  {p.seller}
+                </td>
+                <td className="px-6 py-4 text-center text-xs font-black text-slate-900">
+                  {p.amount}
+                </td>
+                <td className="px-6 py-4 text-center text-[10px] font-bold text-slate-400 uppercase">
+                  {p.date}
+                </td>
+                <td className="px-6 py-4 text-center">
+                  <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusStyle(p.status)}`}>
+                    {p.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+            {history.length === 0 && (
+              <tr>
+                <td colSpan="5" className="px-8 py-10 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">
+                  No payout history available
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
 

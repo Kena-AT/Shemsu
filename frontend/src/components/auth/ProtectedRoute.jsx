@@ -15,7 +15,8 @@ const ProtectedRoute = ({ allowedRoles, children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    const isAdminPath = window.location.pathname.startsWith('/admin');
+    return <Navigate to={isAdminPath ? "/admin/login" : "/login"} replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user?.role)) {

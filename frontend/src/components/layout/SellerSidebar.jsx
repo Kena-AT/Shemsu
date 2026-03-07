@@ -35,7 +35,6 @@ const SellerSidebar = ({ activeNav, onNavigate }) => {
   ];
 
   const bottomItems = [
-    { to: '/seller/profile', label: 'Store Profile', icon: Store, locked: !isApproved },
     { to: '/seller/settings', label: 'Settings', icon: Settings, locked: !isApproved },
     { to: '/seller/support', label: 'Support', icon: HelpCircle },
   ];
@@ -123,7 +122,7 @@ const SellerSidebar = ({ activeNav, onNavigate }) => {
           </Link>
         ))}
         
-        <div className="mt-4 pt-4 border-t border-slate-100 flex items-center gap-3 px-2">
+        <Link to="/seller/profile" className="mt-4 pt-4 border-t border-slate-100 flex items-center gap-3 px-2 hover:bg-slate-50 transition-colors rounded-xl group cursor-pointer">
           <div className="relative">
             <div className="w-10 h-10 rounded-full bg-blue-600 border border-slate-200 flex items-center justify-center text-white font-bold text-sm">
               {user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'S'}
@@ -139,7 +138,7 @@ const SellerSidebar = ({ activeNav, onNavigate }) => {
             </div>
           </div>
           <div className="flex flex-col overflow-hidden">
-            <span className="text-sm font-bold text-slate-900 truncate">{user?.fullName || 'Store Owner'}</span>
+            <span className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">{user?.fullName || 'Store Owner'}</span>
             <span className={`text-[9px] font-bold uppercase tracking-wider ${
               status === 'approved' ? 'text-emerald-600' :
               status === 'pending' ? 'text-amber-600' :
@@ -148,7 +147,7 @@ const SellerSidebar = ({ activeNav, onNavigate }) => {
               {status === 'none' ? 'UNVERIFIED' : status}
             </span>
           </div>
-        </div>
+        </Link>
       </div>
     </aside>
   );

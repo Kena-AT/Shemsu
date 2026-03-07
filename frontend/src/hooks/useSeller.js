@@ -26,8 +26,21 @@ export const useSeller = () => {
     }
   });
 
+  // Update Profile
+  const updateProfile = useMutation({
+    mutationFn: (profileData) => api.patch('/seller/profile', profileData),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['auth-user']); // Invalidate user session to reflect changes
+      toast.success('Profile updated successfully!');
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Profile update failed.');
+    }
+  });
+
   return {
     useGetVerificationStatus,
-    submitVerification
+    submitVerification,
+    updateProfile
   };
 };

@@ -128,6 +128,38 @@ class SellerController {
       res.status(500).json({ message: error.message });
     }
   }
+
+  /**
+   * Update Seller Profile (Phone and Bio)
+   */
+  async updateProfile(req, res) {
+    try {
+      const sellerId = req.user.id;
+      const { fullName, phoneNumber, bio } = req.body;
+
+      const [updated] = await db.update(users)
+        .set({ 
+          fullName, 
+          phoneNumber, 
+          bio, 
+          updatedAt: new Date() 
+        })
+        .where(eq(users.id, sellerId))
+        .returning();
+
+      res.json({
+        message: 'Profile updated successfully',
+        user: {
+          id: updated.id,
+          fullName: updated.fullName,
+          phoneNumber: updated.phoneNumber,
+          bio: updated.bio
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
 }
 
 module.exports = new SellerController();

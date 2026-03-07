@@ -1,13 +1,44 @@
-import React, { useState } from 'react';
-import { User, Store, MapPin, Mail, Phone, Camera, Save, Shield } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, Store, MapPin, Mail, Phone, Camera, Save, Shield, Loader2 } from 'lucide-react';
 import { useAuthStore } from '../../../state/useAuthStore';
+import { useSeller } from '../../../hooks/useSeller';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
 import toast from 'react-hot-toast';
 
 const SellerProfile = () => {
   const { user } = useAuthStore();
-  
+  const { updateProfile } = useSeller();
+
+  const [formData, setFormData] = useState({
+    fullName: '',
+    phoneNumber: '',
+    bio: ''
+  });
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user.fullName || '',
+        phoneNumber: user.phoneNumber || '',
+        bio: user.bio || ''
+      });
+    }
+  }, [user]);
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!formData.fullName.trim()) {
+      return toast.error('Full name is required');
+    }
+
+    try {
+      await updateProfile.mutateAsync(formData);
+    } catch (error) {
+      // Error handled by mutation
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <div className="mb-8">
@@ -48,12 +79,13 @@ const SellerProfile = () => {
              </div>
          </div>
 
-         {/* Store Details Form Idea */}
-         <form className="grid md:grid-cols-2 gap-8">
+         {/* Store Details Form */}
+         <form onSubmit={handleSave} className="grid md:grid-cols-2 gap-8">
              <div className="md:col-span-2">
                  <Input 
                     label="STORE NAME / FULL NAME" 
-                    defaultValue={user?.fullName} 
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                     className="rounded-2xl bg-slate-50 border-slate-100 py-4 font-bold"
                     labelClassName="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1"
                  />
@@ -70,6 +102,8 @@ const SellerProfile = () => {
                 label="BUSINESS PHONE" 
                 placeholder="+251 ..." 
                 icon={Phone}
+                value={formData.phoneNumber}
+                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                 className="rounded-2xl bg-slate-50 border-slate-100 py-4 font-bold"
                 labelClassName="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1"
              />
@@ -77,18 +111,36 @@ const SellerProfile = () => {
                  <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-2">Store Description</label>
                  <textarea 
                      rows="4"
+                     value={formData.bio}
+                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                      className="w-full rounded-2xl bg-slate-50 border border-slate-100 py-4 px-4 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                      placeholder="Tell buyers about your store, what you sell, and your business history..."
                  ></textarea>
              </div>
-         </form>
 
-         <div className="mt-10 pt-8 flex justify-end gap-3 border-t border-slate-50">
-             <Button variant="outline" className="px-8 rounded-xl font-bold">Discard</Button>
-             <Button onClick={(e) => { e.preventDefault(); toast.success('Store profile updated!'); }} className="px-8 rounded-xl bg-slate-900 text-white font-bold flex items-center gap-2">
-                 <Save size={18} /> Save Changes
-             </Button>
-         </div>
+             <div className="md:col-span-2 mt-10 pt-8 flex justify-end gap-3 border-t border-slate-50">
+                 <Button 
+                    type="button"
+                    variant="outline" 
+                    className="px-8 rounded-xl font-bold"
+                    onClick={() => setFormData({
+                        fullName: user.fullName || '',
+                        phoneNumber: user.phoneNumber || '',
+                        bio: user.bio || ''
+                    })}
+                 >
+                    Discard
+                 </Button>
+                 <Button 
+                    type="submit"
+                    disabled={updateProfile.isLoading}
+                    className="px-8 rounded-xl bg-slate-900 text-white font-bold flex items-center gap-2"
+                 >
+                    {updateProfile.isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                    Save Changes
+                 </Button>
+             </div>
+         </form>
       </div>
     </div>
   );

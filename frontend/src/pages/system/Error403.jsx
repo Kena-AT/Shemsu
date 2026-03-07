@@ -1,10 +1,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, Home, ArrowLeft, LifeBuoy } from 'lucide-react';
+import { useAuthStore } from '../../state/useAuthStore';
 import Button from '../../components/common/Button';
 
 const Error403 = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuthStore();
+
+  const getHomeRoute = () => {
+    if (!isAuthenticated) return '/';
+    if (user?.role === 'admin') return '/admin';
+    if (user?.role === 'seller') return '/seller';
+    return '/app';
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
@@ -28,7 +37,7 @@ const Error403 = () => {
 
         <div className="pt-6 grid grid-cols-2 gap-3">
           <Button 
-            onClick={() => navigate('/')}
+            onClick={() => navigate(getHomeRoute())}
             variant="primary"
             className="flex items-center justify-center gap-2"
           >

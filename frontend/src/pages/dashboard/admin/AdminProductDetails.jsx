@@ -28,7 +28,10 @@ const AdminProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { useGetProductById, deleteProduct, updateProductStatus } = useAdmin();
-  const { data: product, isLoading } = useGetProductById(id);
+  const { data, isLoading } = useGetProductById(id);
+  const product = data?.product;
+  const history = data?.history;
+  const reports = data?.reports;
 
   if (isLoading) {
     return (
@@ -175,18 +178,27 @@ const AdminProductDetails = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  <tr className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-8 py-5 text-xs font-bold text-slate-700">Today, 09:12 AM</td>
-                    <td className="px-8 py-5 text-xs font-black text-emerald-600">+10 Inventory</td>
-                    <td className="px-8 py-5 text-xs font-medium text-slate-600 uppercase tracking-tight">Manual Restock</td>
-                    <td className="px-8 py-5 text-xs font-black text-blue-600 italic uppercase">System_Auto</td>
-                  </tr>
-                  <tr className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-8 py-5 text-xs font-bold text-slate-700">Oct 23, 16:45</td>
-                    <td className="px-8 py-5 text-xs font-black text-rose-600">-1 Inventory</td>
-                    <td className="px-8 py-5 text-xs font-medium text-slate-600 uppercase tracking-tight">Purchase ORD-9921</td>
-                    <td className="px-8 py-5 text-xs font-black text-blue-600 italic uppercase">User_CX</td>
-                  </tr>
+                  {history?.map((log) => (
+                    <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-8 py-5 text-xs font-bold text-slate-700">
+                        {new Date(log.createdAt).toLocaleDateString()}, {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                      <td className="px-8 py-5 text-xs font-black text-blue-600 uppercase tracking-tight">
+                        {log.action.replace('_', ' ')}
+                      </td>
+                      <td className="px-8 py-5 text-xs font-medium text-slate-600 italic">
+                        {log.reason || 'N/A'}
+                      </td>
+                      <td className="px-8 py-5 text-xs font-black text-blue-600 italic uppercase">
+                        {log.adminName}
+                      </td>
+                    </tr>
+                  ))}
+                  {(!history || history.length === 0) && (
+                    <tr>
+                      <td colSpan="4" className="px-8 py-10 text-center text-xs text-slate-400 italic font-medium">No administrative ledger entries recorded for this asset.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -233,13 +245,15 @@ const AdminProductDetails = () => {
           {/* Active Moderation Reports */}
           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden">
              <div className="absolute top-0 left-0 w-full h-1 bg-rose-600 opacity-20"></div>
-             <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-rose-600" />
-                  <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">Safety Reports (0)</h3>
+                  <AlertTriangle className={`w-5 h-5 ${reports?.length > 0 ? 'text-rose-600' : 'text-emerald-600'}`} />
+                  <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">Safety Reports ({reports?.length || 0})</h3>
                 </div>
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] bg-slate-50 px-2 py-1 rounded border border-slate-100">Clean Slate</span>
-             </div>
+                <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 rounded border ${reports?.length > 0 ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
+                  {reports?.length > 0 ? 'Action Recommended' : 'Clean Slate'}
+                </span>
+              </div>
              
              {/* If no reports */}
              <div className="p-8 border-2 border-dashed border-slate-100 rounded-3xl flex flex-col items-center justify-center text-center">
@@ -280,10 +294,12 @@ const AdminProductDetails = () => {
                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Asset Reference ID</span>
                    <span className="text-xs font-black text-slate-300 font-mono tracking-tighter">#{product._id}</span>
                 </div>
-                <div className="flex flex-col">
-                   <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Last Modification Pulse</span>
-                   <span className="text-xs font-black text-slate-300 uppercase italic">ADMIN_OVERRIDE @ Oct 24</span>
-                </div>
+                 <div className="flex flex-col">
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Last Modification Pulse</span>
+                    <span className="text-xs font-black text-slate-300 uppercase italic">
+                      {product.updatedAt ? new Date(product.updatedAt).toLocaleDateString() : 'N/A'}
+                    </span>
+                 </div>
                 <div className="pt-4 mt-4 border-t border-white/10">
                    <p className="text-[10px] text-slate-500 leading-relaxed italic">
                       "This asset is currently complying with all automated safety sub-routines and global marketplace policies."

@@ -1,13 +1,22 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, RefreshCw, Home, ShieldCheck, Mail } from 'lucide-react';
+import { useAuthStore } from '../../state/useAuthStore';
 import Button from '../../components/common/Button';
 
 const Error500 = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuthStore();
 
   const handleRefresh = () => {
     window.location.reload();
+  };
+
+  const getHomeRoute = () => {
+    if (!isAuthenticated) return '/';
+    if (user?.role === 'admin') return '/admin';
+    if (user?.role === 'seller') return '/seller';
+    return '/app';
   };
 
   return (
@@ -40,7 +49,7 @@ const Error500 = () => {
             Refresh Page
           </button>
           <button 
-            onClick={() => navigate('/')}
+            onClick={() => navigate(getHomeRoute())}
             className="flex-1 bg-slate-50 text-slate-900 font-bold py-4 rounded-2xl hover:bg-slate-100 border border-slate-200 transition-all flex items-center justify-center gap-2"
           >
             <Home className="w-5 h-5" />

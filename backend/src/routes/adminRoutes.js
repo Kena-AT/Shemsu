@@ -58,6 +58,13 @@ router.get('/settings', adminController.getSystemSettings);
 router.patch('/settings', adminController.updateSystemSettings);
 
 /**
+ * Analytics & Payouts
+ */
+router.get('/detailed-analytics', adminController.getAnalytics);
+router.get('/payouts', adminController.getPayouts);
+router.post('/payouts/process', adminController.processPayout);
+
+/**
  * Audit Logs
  */
 router.get('/audit-logs', adminController.getAuditLogs);

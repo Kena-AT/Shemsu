@@ -1,5 +1,5 @@
-require('dotenv').config();
-const { db, pool } = require('../config/db');
+require('dotenv').config({ path: '.env' });
+const { db } = require('../config/db');
 const { categories } = require('../models/schema');
 const logger = require('../config/logger');
 
@@ -7,25 +7,28 @@ const categoryData = [
   { name: 'Electronics', slug: 'electronics' },
   { name: 'Fashion', slug: 'fashion' },
   { name: 'Home & Garden', slug: 'home-garden' },
-  { name: 'Beauty', slug: 'beauty' },
-  { name: 'Sports', slug: 'sports' },
-  { name: 'Books', slug: 'books' },
-  { name: 'Toys', slug: 'toys' },
-  { name: 'Automotive', slug: 'automotive' },
+  { name: 'Beauty & Personal Care', slug: 'beauty-personal-care' },
+  { name: 'Sports & Outdoors', slug: 'sports-outdoors' },
+  { name: 'Books & Stationery', slug: 'books-stationery' }
 ];
 
-async function seedCategories() {
+async function seed() {
   try {
-    console.log('Seeding categories...');
+    console.log('Starting category seeding...');
+    
     for (const cat of categoryData) {
-      await db.insert(categories).values(cat).onConflictDoNothing();
+      await db.insert(categories)
+        .values(cat)
+        .onConflictDoNothing();
+      console.log(`Seeded category: ${cat.name}`);
     }
-    console.log('Categories seeded successfully!');
+    
+    console.log('Seeding completed successfully.');
     process.exit(0);
-  } catch (err) {
-    logger.error('Error seeding categories', err);
+  } catch (error) {
+    console.error('Seeding failed:', error);
     process.exit(1);
   }
 }
 
-seedCategories();
+seed();

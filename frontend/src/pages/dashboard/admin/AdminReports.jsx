@@ -34,35 +34,39 @@ import { useAdmin } from '../../../hooks/useAdmin';
 import Button from '../../../components/common/Button';
 
 const AdminReports = () => {
-  const { useGetStats } = useAdmin();
-  const { data: stats, isLoading } = useGetStats();
+  const { useGetStats, useGetAnalytics } = useAdmin();
+  const { data: stats, isLoading: statsLoading } = useGetStats();
+  const { data: analytics, isLoading: analyticsLoading } = useGetAnalytics();
 
   const [timeRange, setTimeRange] = useState('Weekly');
 
-  // Semi-dynamic data based on real stats if available, otherwise fallback to aesthetic defaults for design match
-  const revenueData = [
-    { day: 'Mon', value: 3100 },
-    { day: 'Tue', value: 2200 },
-    { day: 'Wed', value: 4800 },
-    { day: 'Thu', value: 3500 },
-    { day: 'Fri', value: 7200 },
-    { day: 'Sat', value: 5100 },
-    { day: 'Sun', value: 4200 },
+  const isLoading = statsLoading || analyticsLoading;
+
+  const revenueData = analytics?.revenueData || [
+    { day: 'Mon', value: 0 },
+    { day: 'Tue', value: 0 },
+    { day: 'Wed', value: 0 },
+    { day: 'Thu', value: 0 },
+    { day: 'Fri', value: 0 },
+    { day: 'Sat', value: 0 },
+    { day: 'Sun', value: 0 },
   ];
 
-  const categoryData = [
-    { name: 'Electronics', value: 45, color: '#3b82f6' },
-    { name: 'Fashion', value: 25, color: '#ec4899' },
-    { name: 'Home & Living', value: 20, color: '#f59e0b' },
-    { name: 'Beauty', value: 10, color: '#10b981' },
+  const categoryData = analytics?.categoryData || [
+    { name: 'Electronics', value: 0, color: '#3b82f6' },
+    { name: 'Fashion', value: 0, color: '#ec4899' },
+    { name: 'Home & Living', value: 0, color: '#f59e0b' },
+    { name: 'Beauty', value: 0, color: '#10b981' },
   ];
 
   const metrics = [
-    { label: 'Total Revenue', value: stats?.totalRevenue ? `ETB ${stats.totalRevenue.toLocaleString()}` : 'ETB 1,284,500', change: '+12.5%', icon: TrendingUp, positive: true },
-    { label: 'Active Users', value: stats?.totalUsers?.toLocaleString() || '42,890', change: '+5.2%', icon: Users, positive: true },
-    { label: 'New Sellers', value: stats?.totalSellers?.toLocaleString() || '156', change: '+8.1%', icon: UserPlus, positive: true },
-    { label: 'Conversion Rate', value: '3.42%', change: '-0.4%', icon: Percent, positive: false },
+    { label: 'Total Revenue', value: stats?.totalRevenue ? `ETB ${stats.totalRevenue.toLocaleString()}` : 'ETB 0', change: '+12.5%', icon: TrendingUp, positive: true },
+    { label: 'Active Users', value: stats?.totalUsers?.toLocaleString() || '0', change: '+5.2%', icon: Users, positive: true },
+    { label: 'Total Sellers', value: stats?.totalSellers?.toLocaleString() || '0', change: '+8.1%', icon: UserPlus, positive: true },
+    { label: 'Total Products', value: stats?.totalProducts?.toLocaleString() || '0', change: '+2.4%', icon: Activity, positive: true },
   ];
+
+  const topPerformers = analytics?.topPerformers || [];
 
   if (isLoading) return <div className="h-screen flex items-center justify-center"><Activity className="animate-spin text-blue-600" /></div>;
 
@@ -271,11 +275,7 @@ const AdminReports = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {[
-                  { name: 'TechHaven Solutions', sub: 'Pro-Max Headphones', cat: 'Electronics', vol: '$12,400', status: 'TOP PERFORMER', color: 'emerald' },
-                  { name: 'Luxe Wear Collective', sub: 'Winter Knitwear Series', cat: 'Fashion', vol: '$8,920', status: 'TRENDING', color: 'blue' },
-                  { name: 'Modern Home Co.', sub: 'Ergonomic Office Chair', cat: 'Home & Office', vol: '$7,450', status: 'STABLE', color: 'slate' },
-                ].map((row, i) => (
+                {topPerformers.map((row, i) => (
                   <tr key={i} className="hover:bg-slate-50/30 transition-colors group">
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
@@ -304,6 +304,13 @@ const AdminReports = () => {
                     </td>
                   </tr>
                 ))}
+                {topPerformers.length === 0 && (
+                  <tr>
+                    <td colSpan="5" className="px-6 py-10 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">
+                      No high performance data available yet
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

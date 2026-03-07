@@ -8,6 +8,7 @@ const orderStatusEnum = pgEnum('order_status', ['pending', 'processing', 'shippe
 const paymentStatusEnum = pgEnum('payment_status', ['pending', 'paid', 'failed', 'refunded']);
 const moderationStatusEnum = pgEnum('moderation_status', ['pending', 'approved', 'rejected']);
 const reportStatusEnum = pgEnum('report_status', ['pending', 'reviewed', 'dismissed']);
+const payoutStatusEnum = pgEnum('payout_status', ['pending', 'completed', 'failed']);
 
 // Tables
 const users = pgTable('users', {
@@ -27,6 +28,8 @@ const users = pgTable('users', {
   failedLoginAttempts: integer('failed_login_attempts').default(0).notNull(),
   lastLoginAttemptAt: timestamp('last_login_attempt_at'),
   twoFactorEnabled: boolean('two_factor_enabled').default(false).notNull(),
+  phoneNumber: varchar('phone_number', { length: 20 }),
+  bio: text('bio'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -114,6 +117,20 @@ const systemSettings = pgTable('system_settings', {
   type: varchar('type', { length: 20 }).notNull(), // 'boolean', 'numeric', 'string', 'json'
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+const payouts = pgTable('payouts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sellerId: uuid('seller_id').notNull().references(() => users.id),
+  amount: numeric('amount', { precision: 10, scale: 2 }).notNull(),
+  status: payoutStatusEnum('status').default('pending').notNull(),
+  bankDetailsSnapshot: jsonb('bank_details_snapshot').default({}).notNull(),
+  txRef: varchar('tx_ref', { length: 255 }).notNull().unique(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  sellerIdx: index('payout_seller_idx').on(table.sellerId),
+  statusIdx: index('payout_status_idx').on(table.status),
+}));
 
 const carts = pgTable('carts', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -289,6 +306,8 @@ module.exports = {
   orders,
   orderItems,
   reviews,
+  payouts,
+  payoutStatusEnum,
   usersRelations,
   categoriesRelations,
   productsRelations,

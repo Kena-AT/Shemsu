@@ -169,7 +169,7 @@ const SellerVerificationQueue = () => {
                         </div>
                         <div className="flex flex-col text-left">
                           <span className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors uppercase tracking-tight">{seller.fullName}</span>
-                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">ID: SL-{seller.id}292</span>
+                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">ID: SL-{seller.id.substring(0, 8)}</span>
                         </div>
                       </div>
                     </td>
