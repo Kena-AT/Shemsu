@@ -65,6 +65,10 @@ const cartItemSchema = z.object({
   attributes: z.record(z.any()).optional().default({}),
 });
 
+const updateCartItemSchema = z.object({
+  quantity: z.coerce.number().int().positive('Quantity must be at least 1'),
+});
+
 const checkoutSchema = z.object({
   shippingAddress: z.object({
     city: z.string().min(2, 'City is required'),
@@ -99,6 +103,7 @@ module.exports = {
   productSchema,
   cartItemSchema,
   checkoutSchema,
+  updateCartItemSchema,
   updateOrderItemStatusSchema,
   contactFormSchema
 };
