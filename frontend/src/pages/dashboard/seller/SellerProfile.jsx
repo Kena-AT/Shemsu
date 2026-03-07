@@ -33,7 +33,7 @@ const SellerProfile = () => {
              
              <div className="text-center md:text-left">
                  <h2 className="text-2xl font-black text-slate-900 mb-1">{user?.fullName || 'Store Name'}</h2>
-                 <p className="text-blue-600 font-bold mb-4">shemsu.com/store/{user?.fullName?.toLowerCase().replace(/\s+/g, '') || 'shop'}</p>
+                 <p className="text-blue-600 font-bold mb-4">shemsu.vercel.app/seller/{user?.fullName?.toLowerCase().replace(/\s+/g, '') || 'shop'}</p>
                  
                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
                      <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
