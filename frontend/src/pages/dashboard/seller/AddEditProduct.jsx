@@ -38,7 +38,8 @@ const AddEditProduct = () => {
     salePrice: '',
     stock: '',
     sku: '',
-    isActive: true
+    isActive: true,
+    version: 0
   });
   
   const [selectedImages, setSelectedImages] = useState([]);
@@ -54,7 +55,8 @@ const AddEditProduct = () => {
         salePrice: productData.salePrice || '',
         stock: productData.stock || '',
         sku: productData.sku || '',
-        isActive: productData.stock > 0
+        isActive: productData.stock > 0,
+        version: productData.version || 0
       });
       if (productData.images) {
         setPreviewImages(productData.images.map(img => ({ url: img.url, id: img.id })));
